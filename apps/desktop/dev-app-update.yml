@@ -1,0 +1,14 @@
+version: 1.0.21
+files:
+  - url: OpenCode Go-1.0.20-arm64.dmg
+    sha512: wSkFUKTe+MDScc2PLkS+kOUtqmjU7TUYiEPSejVJ3/vTxpKNAoBWQE2dNF5kkgqYu5f0UuWmElNPAwCdW0jSlQ==
+    size: 168645770
+path: OpenCode Go-1.0.20-arm64.dmg
+sha512: wSkFUKTe+MDScc2PLkS+kOUtqmjU7TUYiEPSejVJ3/vTxpKNAoBWQE2dNF5kkgqYu5f0UuWmElNPAwCdW0jSlQ==
+releaseDate: '2026-03-19T08:40:49.027Z'
+releaseNotes: |-
+  - 测试更新功能
+  - 添加自动更新功能（Windows）
+  - 设置面板新增"检查更新"按钮
+  - macOS 用户可通过设置面板访问下载页面
+  - 支持从 CHANGELOG.md 自动读取更新日志

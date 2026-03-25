@@ -1,0 +1,6 @@
+openwork/
+ai-sdk-provider-opencode-sdk/
+node_modules/
+.vite/
+dist/
+out/

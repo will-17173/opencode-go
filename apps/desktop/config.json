@@ -1,0 +1,49 @@
+{
+  "$schema": "https://opencode.ai/config.json",
+  "model": "openai/gpt-4o-mini",
+  "small_model": "anthropic/claude-haiku-4-5-20251001",
+  "provider": {
+    "anthropic": {
+      "options": {
+        "baseURL": "https://coding.dashscope.aliyuncs.com/v1",
+        "timeout": 3000000
+      }
+    },
+    "openai": {
+      "models": {
+        "kimi-k2.5": {
+          "id": "kimi-k2.5",
+          "name": "kimi-k2.5",
+          "attachment": true,
+          "reasoning": true,
+          "temperature": true,
+          "tool_call": true
+        }
+      },
+      "options": {
+        "baseURL": "https://coding.dashscope.aliyuncs.com/v1",
+        "timeout": 3000000
+      }
+    },
+    "openai-compatible": {
+      "name": "OpenAI Compatible",
+      "npm": "@ai-sdk/openai-compatible",
+      "models": {
+        "kimi-k2.5": {
+          "id": "kimi-k2.5",
+          "name": "kimi-k2.5",
+          "attachment": true,
+          "reasoning": true,
+          "temperature": true,
+          "tool_call": true
+        }
+      },
+      "options": {
+        "apiKey": "sk-sp-b42113d9201e4ed7accb65ceab5e2e44",
+        "baseURL": "https://coding.dashscope.aliyuncs.com/v1",
+        "timeout": 3000000,
+        "name": "OpenAICompatible"
+      }
+    }
+  }
+}
