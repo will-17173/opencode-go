@@ -23,10 +23,12 @@ class ConnectionNotifier extends AsyncNotifier<String?> {
   }
 
   Future<bool> connect(String host, String pairingCode) async {
-    final client = ApiClient('http://$host', pairingCode);
+    final client = await ApiClient.create('http://$host', pairingCode);
     final ok = await client.testConnection();
     if (ok) {
       await saveConnection(host, pairingCode);
+      // Register device with desktop after successful connection
+      await client.registerDevice();
     }
     return ok;
   }
@@ -58,11 +60,11 @@ class ConnectionNotifier extends AsyncNotifier<String?> {
 final connectionProvider =
     AsyncNotifierProvider<ConnectionNotifier, String?>(ConnectionNotifier.new);
 
-final apiClientProvider = Provider<ApiClient?>((ref) {
+final apiClientProvider = FutureProvider<ApiClient?>((ref) async {
   final conn = ref.watch(connectionProvider);
   final notifier = ref.watch(connectionProvider.notifier);
   if (conn.valueOrNull != null) {
-    return ApiClient('http://${conn.valueOrNull}', notifier.pairingCode);
+    return ApiClient.create('http://${conn.valueOrNull}', notifier.pairingCode);
   }
   return null;
 });

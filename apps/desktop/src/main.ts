@@ -14,6 +14,10 @@ import type { Event as OpenCodeEvent, TextPartInput, FilePartInput } from '@open
 import { autoUpdater } from 'electron-updater';
 import packageJson from '../package.json';
 
+const DEVICE_ONLINE_WINDOW_MS = 2 * 60 * 1000;
+const DEVICE_RECENT_WINDOW_MS = 15 * 60 * 1000;
+const DEVICE_RETENTION_MS = 30 * 24 * 60 * 60 * 1000;
+
 // ── Skill 类型（主进程内联）─────────────────────────────────────────────────
 interface Skill {
   name: string;
@@ -391,6 +395,129 @@ function getOrCreatePairingCode(): string {
   saveSettings(settings);
   console.log('[pairing] generated new pairing code:', code);
   return code;
+}
+
+interface DeviceRecord {
+  id: string;
+  name: string;
+  platform: 'ios' | 'android' | 'unknown';
+  appVersion?: string;
+  firstSeenAt: number;
+  lastSeenAt: number;
+  lastIp?: string;
+  isPaired: boolean;
+}
+
+interface ConnectedDevice {
+  id: string;
+  name: string;
+  platform: 'ios' | 'android' | 'unknown';
+  appVersion?: string;
+  firstSeenAt: number;
+  lastSeenAt: number;
+  status: 'online' | 'recent' | 'offline';
+}
+
+function getDevicesPath() {
+  return path.join(app.getPath('userData'), 'devices.json');
+}
+
+function normalizeDevicePlatform(value: unknown): 'ios' | 'android' | 'unknown' {
+  if (typeof value !== 'string') return 'unknown';
+  const normalized = value.trim().toLowerCase();
+  if (normalized === 'ios') return 'ios';
+  if (normalized === 'android') return 'android';
+  return 'unknown';
+}
+
+function pruneDevices(devices: DeviceRecord[], now = Date.now()): DeviceRecord[] {
+  return devices.filter((device) => now - device.lastSeenAt <= DEVICE_RETENTION_MS);
+}
+
+function loadDevices(): DeviceRecord[] {
+  try {
+    const raw = fs.readFileSync(getDevicesPath(), 'utf-8');
+    const parsed = JSON.parse(raw) as DeviceRecord[];
+    return pruneDevices(Array.isArray(parsed) ? parsed : []);
+  } catch {
+    return [];
+  }
+}
+
+function saveDevices(devices: DeviceRecord[]) {
+  fs.writeFileSync(getDevicesPath(), JSON.stringify(pruneDevices(devices), null, 2), 'utf-8');
+}
+
+function getDeviceStatus(lastSeenAt: number, now = Date.now()): 'online' | 'recent' | 'offline' {
+  const elapsed = now - lastSeenAt;
+  if (elapsed <= DEVICE_ONLINE_WINDOW_MS) return 'online';
+  if (elapsed <= DEVICE_RECENT_WINDOW_MS) return 'recent';
+  return 'offline';
+}
+
+function toConnectedDevice(record: DeviceRecord, now = Date.now()): ConnectedDevice {
+  return {
+    id: record.id,
+    name: record.name,
+    platform: record.platform,
+    appVersion: record.appVersion,
+    firstSeenAt: record.firstSeenAt,
+    lastSeenAt: record.lastSeenAt,
+    status: getDeviceStatus(record.lastSeenAt, now),
+  };
+}
+
+function upsertDevice(input: {
+  id: string;
+  name?: string;
+  platform?: string;
+  appVersion?: string;
+  ip?: string;
+  isPaired?: boolean;
+}): ConnectedDevice {
+  const now = Date.now();
+  const devices = loadDevices();
+  const existingIndex = devices.findIndex((device) => device.id === input.id);
+  const existing = existingIndex >= 0 ? devices[existingIndex] : undefined;
+  const nextRecord: DeviceRecord = {
+    id: input.id,
+    name: input.name?.trim() || existing?.name || 'Unknown device',
+    platform: normalizeDevicePlatform(input.platform ?? existing?.platform),
+    appVersion: input.appVersion?.trim() || existing?.appVersion,
+    firstSeenAt: existing?.firstSeenAt ?? now,
+    lastSeenAt: now,
+    lastIp: input.ip || existing?.lastIp,
+    isPaired: input.isPaired ?? existing?.isPaired ?? true,
+  };
+
+  if (existingIndex >= 0) {
+    devices[existingIndex] = nextRecord;
+  } else {
+    devices.push(nextRecord);
+  }
+
+  saveDevices(devices);
+  return toConnectedDevice(nextRecord, now);
+}
+
+function touchDeviceFromHeaders(req: http.IncomingMessage) {
+  const deviceIdHeader = req.headers['x-opencode-device-id'];
+  const deviceId = Array.isArray(deviceIdHeader) ? deviceIdHeader[0] : deviceIdHeader;
+  if (!deviceId) return;
+
+  const deviceNameHeader = req.headers['x-opencode-device-name'];
+  const devicePlatformHeader = req.headers['x-opencode-device-platform'];
+  const appVersionHeader = req.headers['x-opencode-app-version'];
+  const remoteIp = req.socket.remoteAddress ?? undefined;
+
+  upsertDevice({
+    id: deviceId,
+    name: Array.isArray(deviceNameHeader) ? deviceNameHeader[0] : deviceNameHeader,
+    platform: Array.isArray(devicePlatformHeader) ? devicePlatformHeader[0] : devicePlatformHeader,
+    appVersion: Array.isArray(appVersionHeader) ? appVersionHeader[0] : appVersionHeader,
+    ip: remoteIp,
+    isPaired: true,
+  });
 }
 
 // ── 启动 opencode serve ───────────────────────────────────────────────────────
@@ -833,7 +960,7 @@ function setCorsHeaders(res: http.ServerResponse, req?: http.IncomingMessage) {
   res.setHeader('Access-Control-Allow-Origin', origin);
   res.setHeader('Access-Control-Allow-Credentials', 'true');
   res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PATCH, DELETE, OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, X-Pairing-Code, X-Opencode-Device-Id, X-Opencode-Device-Name, X-Opencode-Device-Platform, X-Opencode-App-Version');
   res.setHeader('Access-Control-Expose-Headers', 'X-Session-Id');
 }
 
@@ -874,6 +1001,83 @@ function handleRegeneratePairingCode(req: http.IncomingMessage, res: http.Server
   console.log('[pairing] regenerated pairing code:', newCode);
   res.writeHead(200, { 'Content-Type': 'application/json' });
   res.end(JSON.stringify({ pairingCode: newCode }));
+}
+
+function handleRegisterConnectedDevice(req: http.IncomingMessage, res: http.ServerResponse): Promise<void> {
+  return new Promise((resolve) => {
+    setCorsHeaders(res, req);
+    let body: {
+      deviceId?: string;
+      deviceName?: string;
+      platform?: string;
+      appVersion?: string;
+    };
+
+    (async () => {
+      try {
+        const rawBody = await readBody(req);
+        console.log('[devices] register request body:', rawBody);
+        body = JSON.parse(rawBody) as typeof body;
+      } catch {
+        res.writeHead(400, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ error: 'Bad Request' }));
+        resolve();
+        return;
+      }
+
+      const deviceId = body.deviceId?.trim();
+      if (!deviceId) {
+        res.writeHead(400, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ error: 'Missing deviceId' }));
+        resolve();
+        return;
+      }
+
+      console.log('[devices] registering device:', deviceId, body.deviceName, body.platform);
+      const device = upsertDevice({
+        id: deviceId,
+        name: body.deviceName,
+        platform: body.platform,
+        appVersion: body.appVersion,
+        ip: req.socket.remoteAddress ?? undefined,
+        isPaired: true,
+      });
+      console.log('[devices] device registered:', device);
+
+      res.writeHead(200, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify({ ok: true, device }));
+      resolve();
+    })().catch((error) => {
+      console.error('[devices] register failed', error);
+      if (!res.headersSent) {
+        res.writeHead(500, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ error: 'Internal Server Error' }));
+      }
+      resolve();
+    });
+  });
+}
+
+function handleGetConnectedDevices(req: http.IncomingMessage, res: http.ServerResponse) {
+  setCorsHeaders(res, req);
+  const now = Date.now();
+  const devices = loadDevices()
+    .filter((device) => device.isPaired)
+    .sort((a, b) => b.lastSeenAt - a.lastSeenAt)
+    .map((device) => toConnectedDevice(device, now));
+
+  console.log('[devices] get devices, count:', devices.length, devices.map(d => d.name));
+
+  const summary = devices.reduce(
+    (acc, device) => {
+      acc[device.status] += 1;
+      return acc;
+    },
+    { online: 0, recent: 0, offline: 0 }
+  );
+
+  res.writeHead(200, { 'Content-Type': 'application/json' });
+  res.end(JSON.stringify({ devices, summary }));
 }
 
 // ── GET /api/models ───────────────────────────────────────────────────────────
@@ -2131,6 +2335,7 @@ function createProxyServer(): Promise<number> {
           res.end(JSON.stringify({ error: 'Invalid pairing code' }));
           return;
         }
+        touchDeviceFromHeaders(req);
       }
 
       // /api/settings
@@ -2168,6 +2373,16 @@ function createProxyServer(): Promise<number> {
         }
         res.writeHead(200, { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' });
         res.end(JSON.stringify({ ips: localIPs, port: proxyPort }));
+        return;
+      }
+
+      if (req.method === 'GET' && url.startsWith('/api/connection/devices')) {
+        handleGetConnectedDevices(req, res);
+        return;
+      }
+
+      if (req.method === 'POST' && url.startsWith('/api/pairing/devices/register')) {
+        await handleRegisterConnectedDevice(req, res);
         return;
       }
 

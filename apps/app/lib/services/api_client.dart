@@ -1,29 +1,82 @@
 import 'dart:async';
+import 'dart:io';
 import 'package:dio/dio.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../models/session.dart';
 import '../models/message.dart';
 import 'sse_parser.dart';
+
+const _keyDeviceId = 'opencode_device_id';
+
+String _generateDeviceId() {
+  final random = DateTime.now().microsecondsSinceEpoch;
+  final suffix = List.generate(8, (_) => 'abcdefghijklmnopqrstuvwxyz0123456789'[DateTime.now().microsecond % 36]).join();
+  return 'device-$random-$suffix';
+}
+
+Future<String> _getOrCreateDeviceId() async {
+  final prefs = await SharedPreferences.getInstance();
+  var deviceId = prefs.getString(_keyDeviceId);
+  if (deviceId == null || deviceId.isEmpty) {
+    deviceId = _generateDeviceId();
+    await prefs.setString(_keyDeviceId, deviceId);
+  }
+  return deviceId;
+}
+
+String _getPlatformName() {
+  if (Platform.isIOS) return 'ios';
+  if (Platform.isAndroid) return 'android';
+  return 'unknown';
+}
+
+String _getDeviceName() {
+  if (Platform.isIOS) return 'iPhone';
+  if (Platform.isAndroid) return 'Android';
+  return 'Unknown device';
+}
 
 class ApiClient {
   final Dio _dio;
   final String baseUrl;
   final String pairingCode;
+  final String deviceId;
+  final String deviceName;
+  final String platform;
 
-  ApiClient(this.baseUrl, this.pairingCode)
-      : _dio = Dio(BaseOptions(
+  ApiClient._({
+    required this.baseUrl,
+    required this.pairingCode,
+    required this.deviceId,
+    required this.deviceName,
+    required this.platform,
+  }) : _dio = Dio(BaseOptions(
           baseUrl: baseUrl,
           connectTimeout: const Duration(seconds: 5),
           receiveTimeout: const Duration(seconds: 30),
         )) {
-    // 添加拦截器：自动附加 X-Pairing-Code 请求头
     _dio.interceptors.add(InterceptorsWrapper(
       onRequest: (options, handler) {
         if (pairingCode.isNotEmpty) {
           options.headers['X-Pairing-Code'] = pairingCode;
         }
+        options.headers['X-Opencode-Device-Id'] = deviceId;
+        options.headers['X-Opencode-Device-Name'] = deviceName;
+        options.headers['X-Opencode-Device-Platform'] = platform;
         handler.next(options);
       },
     ));
+  }
+
+  static Future<ApiClient> create(String baseUrl, String pairingCode) async {
+    final deviceId = await _getOrCreateDeviceId();
+    return ApiClient._(
+      baseUrl: baseUrl,
+      pairingCode: pairingCode,
+      deviceId: deviceId,
+      deviceName: _getDeviceName(),
+      platform: _getPlatformName(),
+    );
   }
 
   Future<bool> testConnection() async {
@@ -182,6 +235,19 @@ class ApiClient {
       return response.statusCode == 200;
     } catch (_) {
       return false;
+    }
+  }
+
+  Future<void> registerDevice() async {
+    try {
+      await _dio.post('/api/pairing/devices/register', data: {
+        'deviceId': deviceId,
+        'deviceName': deviceName,
+        'platform': platform,
+      });
+      print('[device] registered successfully: $deviceId');
+    } catch (e) {
+      print('[device] registration failed: $e');
     }
   }
 }

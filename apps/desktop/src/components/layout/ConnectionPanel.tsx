@@ -10,9 +10,11 @@ import {
   MoreHorizontal,
   Pencil,
   Trash2,
+  Smartphone,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useProxyPort } from '@/hooks/useProxyPort';
+import { useConnectedDevices } from '@/hooks/useConnectedDevices';
 import { cn } from '@/lib/utils';
 import {
   DropdownMenu,
@@ -43,6 +45,35 @@ interface NetworkInfo {
 
 interface PairingCodeResponse {
   pairingCode: string;
+}
+
+function formatRelativeTime(timestamp: number) {
+  const diff = Date.now() - timestamp;
+  const minutes = Math.max(1, Math.floor(diff / 60000));
+  if (minutes < 60) return `${minutes} 分钟前`;
+  const hours = Math.floor(minutes / 60);
+  if (hours < 24) return `${hours} 小时前`;
+  const days = Math.floor(hours / 24);
+  return `${days} 天前`;
+}
+
+function DeviceStatusBadge({ status }: { status: 'online' | 'recent' | 'offline' }) {
+  const styles = {
+    online: 'bg-emerald-50 text-emerald-700',
+    recent: 'bg-amber-50 text-amber-700',
+    offline: 'bg-slate-100 text-slate-600',
+  } as const;
+  const labels = {
+    online: '在线',
+    recent: '最近活跃',
+    offline: '离线',
+  } as const;
+
+  return (
+    <span className={cn('inline-flex rounded-full px-2 py-0.5 text-xs font-medium', styles[status])}>
+      {labels[status]}
+    </span>
+  );
 }
 
 function CopyBtn({ text }: { text: string }) {
@@ -97,6 +128,7 @@ export function ConnectionPanel({
   onRenameProject,
 }: ConnectionPanelProps) {
   const proxyPort = useProxyPort();
+  const { devices, summary, isLoading: devicesLoading } = useConnectedDevices(proxyPort);
   const baseUrl = proxyPort ? `http://127.0.0.1:${proxyPort}` : null;
 
   const [ips, setIps] = useState<string[] | null>(null);
@@ -221,6 +253,58 @@ export function ConnectionPanel({
                 </span>
               </div>
               {pairingCode ? <CopyBtn text={pairingCode} /> : null}
+            </div>
+          </div>
+
+          <div className="mt-4 rounded-xl border border-border/60 bg-[#fcfcfd] p-4">
+            <div className="flex items-start justify-between gap-3">
+              <div>
+                <div className="flex items-center gap-2">
+                  <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-slate-100 text-slate-600">
+                    <Smartphone className="h-4 w-4" />
+                  </div>
+                  <div>
+                    <h3 className="text-sm font-semibold text-foreground">已连接设备</h3>
+                    <p className="text-xs text-muted-foreground">显示已配对设备，并根据最近活跃时间标记状态</p>
+                  </div>
+                </div>
+              </div>
+              <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                <span>在线 {summary.online}</span>
+                <span>·</span>
+                <span>最近 {summary.recent}</span>
+                <span>·</span>
+                <span>离线 {summary.offline}</span>
+              </div>
+            </div>
+
+            <div className="mt-4 space-y-2">
+              {devicesLoading ? (
+                <p className="text-sm text-muted-foreground">正在加载设备…</p>
+              ) : devices.length === 0 ? (
+                <div className="rounded-lg border border-dashed border-border/70 bg-white px-3 py-4 text-sm text-muted-foreground">
+                  暂无已配对设备，移动端完成配对后会显示在这里。
+                </div>
+              ) : (
+                devices.map((device) => (
+                  <div
+                    key={device.id}
+                    className="flex items-center justify-between gap-3 rounded-lg border border-border/60 bg-white px-3 py-3"
+                  >
+                    <div className="min-w-0">
+                      <div className="flex items-center gap-2">
+                        <p className="truncate text-sm font-semibold text-foreground">{device.name}</p>
+                        <DeviceStatusBadge status={device.status} />
+                      </div>
+                      <p className="mt-1 text-xs text-muted-foreground">
+                        {device.platform === 'ios' ? 'iOS' : device.platform === 'android' ? 'Android' : '未知平台'}
+                        {' · 最近活跃 '}
+                        {formatRelativeTime(device.lastSeenAt)}
+                      </p>
+                    </div>
+                  </div>
+                ))
+              )}
             </div>
           </div>
         </section>

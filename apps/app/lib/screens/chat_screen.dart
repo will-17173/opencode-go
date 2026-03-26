@@ -45,7 +45,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
   }
 
   Future<void> _loadHistory() async {
-    final client = ref.read(apiClientProvider);
+    final client = ref.read(apiClientProvider).valueOrNull;
     if (client == null || _sessionId == null || _directory == null) return;
 
     final messages =

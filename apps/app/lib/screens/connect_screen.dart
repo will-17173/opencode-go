@@ -106,7 +106,7 @@ class _ConnectScreenState extends ConsumerState<ConnectScreen> {
         return;
       }
 
-      final client = ApiClient('http://$host', code);
+      final client = await ApiClient.create('http://$host', code);
       try {
         await client.getSessions();
       } on DioException catch (e) {
@@ -127,6 +127,7 @@ class _ConnectScreenState extends ConsumerState<ConnectScreen> {
 
       final notifier = ref.read(connectionProvider.notifier);
       await notifier.saveConnection(host, code);
+      await client.registerDevice();
 
       if (!mounted) return;
       setState(() => _loading = false);

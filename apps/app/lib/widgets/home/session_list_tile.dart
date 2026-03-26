@@ -4,14 +4,16 @@ import '../../models/session.dart';
 
 class SessionListTile extends StatelessWidget {
   final Session session;
-  final VoidCallback onTap;
+  final VoidCallback? onTap;
   final String subtitle;
+  final Widget? trailing;
 
   const SessionListTile({
     super.key,
     required this.session,
     required this.onTap,
     required this.subtitle,
+    this.trailing,
   });
 
   @override
@@ -36,7 +38,7 @@ class SessionListTile extends StatelessWidget {
           color: colorScheme.onSurfaceVariant,
         ),
       ),
-      trailing: const Icon(Icons.chevron_right),
+      trailing: trailing ?? const Icon(Icons.chevron_right),
       onTap: onTap,
     );
   }

@@ -27,7 +27,7 @@ class ChatNotifier extends Notifier<List<ChatMessage>> {
     required String directory,
     List<Map<String, dynamic>> files = const [],
   }) async {
-    final client = ref.read(apiClientProvider);
+    final client = ref.read(apiClientProvider).valueOrNull;
     if (client == null) return;
 
     final currentSessionId = ref.read(currentSessionIdProvider);
