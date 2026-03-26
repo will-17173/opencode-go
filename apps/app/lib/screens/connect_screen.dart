@@ -1,9 +1,18 @@
-import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:dio/dio.dart';
+
 import '../providers/connection_provider.dart';
 import '../services/api_client.dart';
+import '../theme/app_spacing.dart';
+import '../widgets/common/app_loading_state.dart';
+import '../widgets/common/app_scaffold.dart';
+import '../widgets/connect/connect_form_card.dart';
+import '../widgets/connect/connect_header.dart';
+import '../widgets/connect/connect_status_banner.dart';
+import '../widgets/connect/pairing_code_field.dart';
+import '../widgets/connect/server_host_field.dart';
 
 class ConnectScreen extends ConsumerStatefulWidget {
   const ConnectScreen({super.key});
@@ -72,7 +81,6 @@ class _ConnectScreenState extends ConsumerState<ConnectScreen> {
     final host = '$ip:$port';
 
     try {
-      // 第一步：通过 GET /api/health 验证 IP:Port 可达（不需要配对码）
       final healthDio = Dio(BaseOptions(
         baseUrl: 'http://$host',
         connectTimeout: const Duration(seconds: 5),
@@ -98,7 +106,6 @@ class _ConnectScreenState extends ConsumerState<ConnectScreen> {
         return;
       }
 
-      // 第二步：带配对码发送请求，验证配对码正确
       final client = ApiClient('http://$host', code);
       try {
         await client.getSessions();
@@ -118,14 +125,13 @@ class _ConnectScreenState extends ConsumerState<ConnectScreen> {
         return;
       }
 
-      // 两步均通过，直接保存连接信息并跳转（避免 connect() 内部重复验证）
       final notifier = ref.read(connectionProvider.notifier);
       await notifier.saveConnection(host, code);
 
       if (!mounted) return;
       setState(() => _loading = false);
       Navigator.of(context).pushReplacementNamed('/home');
-    } catch (e) {
+    } catch (_) {
       if (!mounted) return;
       setState(() {
         _loading = false;
@@ -137,72 +143,45 @@ class _ConnectScreenState extends ConsumerState<ConnectScreen> {
   @override
   Widget build(BuildContext context) {
     if (!_initialized) {
-      return const Scaffold(
-        body: Center(child: CircularProgressIndicator()),
-      );
+      return const Scaffold(body: AppLoadingState(message: '正在读取上次成功的连接配置'));
     }
-    return Scaffold(
-      body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.all(24),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            crossAxisAlignment: CrossAxisAlignment.stretch,
+
+    return AppScaffold(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          const SizedBox(height: AppSpacing.xxl),
+          const ConnectHeader(),
+          const SizedBox(height: AppSpacing.xxl),
+          ConnectFormCard(
             children: [
-              const Icon(Icons.computer, size: 64, color: Colors.blue),
-              const SizedBox(height: 16),
-              Text(
-                'OpenCode Go',
-                style: Theme.of(context).textTheme.headlineMedium,
-                textAlign: TextAlign.center,
-              ),
-              const SizedBox(height: 8),
-              Text(
-                '输入 PC 上 OpenCode 的地址',
-                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                      color: Colors.grey,
-                    ),
-                textAlign: TextAlign.center,
-              ),
-              const SizedBox(height: 32),
-              TextField(
+              ServerHostField(
                 controller: _ipController,
-                decoration: const InputDecoration(
-                  labelText: 'IP 地址',
-                  hintText: '例如：192.168.1.100',
-                  border: OutlineInputBorder(),
-                  prefixIcon: Icon(Icons.lan),
-                ),
+                labelText: 'IP 地址',
+                hintText: '例如：192.168.1.100',
+                icon: Icons.lan_outlined,
                 keyboardType: TextInputType.url,
                 onSubmitted: (_) => _connect(),
               ),
-              const SizedBox(height: 12),
-              TextField(
+              const SizedBox(height: AppSpacing.md),
+              ServerHostField(
                 controller: _portController,
-                decoration: const InputDecoration(
-                  labelText: '端口',
-                  hintText: '4097',
-                  border: OutlineInputBorder(),
-                  prefixIcon: Icon(Icons.settings_ethernet),
-                ),
+                labelText: '端口',
+                hintText: '4097',
+                icon: Icons.settings_ethernet,
                 keyboardType: TextInputType.number,
                 onSubmitted: (_) => _connect(),
               ),
-              const SizedBox(height: 12),
-              TextField(
+              const SizedBox(height: AppSpacing.md),
+              PairingCodeField(
                 controller: _codeController,
-                decoration: InputDecoration(
-                  labelText: '配对码',
-                  hintText: '6 位数字',
-                  border: const OutlineInputBorder(),
-                  errorText: _error,
-                  prefixIcon: const Icon(Icons.pin),
-                ),
-                keyboardType: TextInputType.number,
-                maxLength: 6,
                 onSubmitted: (_) => _connect(),
               ),
-              const SizedBox(height: 16),
+              if (_error != null) ...[
+                const SizedBox(height: AppSpacing.md),
+                ConnectStatusBanner(message: _error!),
+              ],
+              const SizedBox(height: AppSpacing.lg),
               FilledButton(
                 onPressed: _loading ? null : _connect,
                 child: _loading
@@ -211,11 +190,11 @@ class _ConnectScreenState extends ConsumerState<ConnectScreen> {
                         width: 20,
                         child: CircularProgressIndicator(strokeWidth: 2),
                       )
-                    : const Text('连接'),
+                    : const Text('连接到桌面端'),
               ),
             ],
           ),
-        ),
+        ],
       ),
     );
   }

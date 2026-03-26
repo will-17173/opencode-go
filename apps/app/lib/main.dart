@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+
 import 'providers/connection_provider.dart';
+import 'screens/chat_screen.dart';
 import 'screens/connect_screen.dart';
 import 'screens/home_screen.dart';
-import 'screens/chat_screen.dart';
+import 'theme/app_theme.dart';
 
 void main() {
   runApp(const ProviderScope(child: OpenCodeGoApp()));
@@ -16,10 +18,8 @@ class OpenCodeGoApp extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     return MaterialApp(
       title: 'OpenCode Go',
-      theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.blue),
-        useMaterial3: true,
-      ),
+      debugShowCheckedModeBanner: false,
+      theme: AppTheme.light,
       home: const _AppEntry(),
       routes: {
         '/connect': (_) => const ConnectScreen(),
