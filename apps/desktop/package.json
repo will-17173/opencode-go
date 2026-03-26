@@ -20,7 +20,18 @@
     "publish:mac": "node scripts/publish.mjs",
     "lint": "eslint --ext .ts,.tsx ."
   },
-  "keywords": ["electron", "ai", "desktop", "assistant", "opencode", "vite", "typescript", "react", "opencode-go", "OpenCode Go"],
+  "keywords": [
+    "electron",
+    "ai",
+    "desktop",
+    "assistant",
+    "opencode",
+    "vite",
+    "typescript",
+    "react",
+    "opencode-go",
+    "OpenCode Go"
+  ],
   "license": "MIT",
   "devDependencies": {
     "@electron/notarize": "^2.5.0",
@@ -76,6 +87,6 @@
     "opencode-darwin-x64": "1.2.15",
     "opencode-linux-arm64": "1.2.15",
     "opencode-linux-x64": "1.2.15",
-    "opencode-windows-x64": "1.2.15"
+    "opencode-windows-x64": "^1.2.15"
   }
 }

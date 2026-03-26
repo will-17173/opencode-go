@@ -137,6 +137,11 @@ function resolveOpencodeBinaryPath(): string {
   if (fs.existsSync(embeddedPath)) return embeddedPath;
 
   const appPath = app.getAppPath();
+  // monorepo 场景：node_modules 可能在根目录，需要向上查找
+  const monorepoRootCandidates = [
+    path.resolve(__dirname, '..', '..', '..', 'node_modules', `opencode-${platformName}-${arch}`, binaryName),
+    path.resolve(__dirname, '..', '..', '..', 'node_modules', `opencode-${platformName}-${arch}`, 'bin', binaryName),
+  ];
   const devCandidates = [
     path.join(
       process.resourcesPath,
@@ -149,6 +154,11 @@ function resolveOpencodeBinaryPath(): string {
     path.resolve(__dirname, '..', 'node_modules', `opencode-${platformName}-${arch}`, 'bin', binaryName),
     path.join(appPath, 'node_modules', `opencode-${platformName}-${arch}`, 'bin', binaryName),
     path.join(process.cwd(), 'node_modules', `opencode-${platformName}-${arch}`, 'bin', binaryName),
+    // 包可能直接把二进制放在根目录（无 bin 子目录）
+    path.resolve(__dirname, '..', 'node_modules', `opencode-${platformName}-${arch}`, binaryName),
+    path.join(appPath, 'node_modules', `opencode-${platformName}-${arch}`, binaryName),
+    path.join(process.cwd(), 'node_modules', `opencode-${platformName}-${arch}`, binaryName),
+    ...monorepoRootCandidates,
   ];
 
   for (const candidate of devCandidates) {
