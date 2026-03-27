@@ -23,7 +23,7 @@ class ConnectScreen extends ConsumerStatefulWidget {
 
 class _ConnectScreenState extends ConsumerState<ConnectScreen> {
   final _ipController = TextEditingController();
-  final _portController = TextEditingController(text: '4097');
+  final _portController = TextEditingController();
   final _codeController = TextEditingController();
   bool _loading = false;
   String? _error;
@@ -42,7 +42,10 @@ class _ConnectScreenState extends ConsumerState<ConnectScreen> {
         '';
     final code = prefs.getString('pairingCode') ?? '';
 
-    if (host.isNotEmpty) {
+    // 判断是否曾经连接过
+    final hasConnectedBefore = host.isNotEmpty;
+
+    if (hasConnectedBefore) {
       final parts = host.split(':');
       if (parts.length == 2) {
         _ipController.text = parts[0];
@@ -50,7 +53,11 @@ class _ConnectScreenState extends ConsumerState<ConnectScreen> {
       } else {
         _ipController.text = host;
       }
+    } else {
+      // 从未连接过，设置默认端口
+      _portController.text = '38096';
     }
+
     if (code.isNotEmpty) {
       _codeController.text = code;
     }
@@ -168,7 +175,7 @@ class _ConnectScreenState extends ConsumerState<ConnectScreen> {
               ServerHostField(
                 controller: _portController,
                 labelText: '端口',
-                hintText: '4097',
+                hintText: '38096',
                 icon: Icons.settings_ethernet,
                 keyboardType: TextInputType.number,
                 onSubmitted: (_) => _connect(),

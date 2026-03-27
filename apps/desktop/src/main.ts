@@ -16,6 +16,9 @@ import packageJson from '../package.json';
 
 const DEVICE_ONLINE_WINDOW_MS = 2 * 60 * 1000;
 const DEVICE_RECENT_WINDOW_MS = 15 * 60 * 1000;
+
+// 代理端口优先列表（选择不常用的端口范围）
+const PREFERRED_PROXY_PORTS = [38096, 38097, 38098, 38099, 38100];
 const DEVICE_RETENTION_MS = 30 * 24 * 60 * 60 * 1000;
 
 // ── Skill 类型（主进程内联）─────────────────────────────────────────────────
@@ -2547,12 +2550,31 @@ function createProxyServer(): Promise<number> {
       res.writeHead(404); res.end('Not Found');
     });
 
-    proxyServer.listen(0, '0.0.0.0', () => {
-      const addr = proxyServer!.address() as { port: number };
-      proxyPort = addr.port;
-      console.log(`[proxy] listening on 0.0.0.0:${proxyPort}`);
-      resolve(proxyPort);
-    });
+    // 依次尝试优先端口，都被占用则使用随机端口
+    const tryListen = (portIndex: number): void => {
+      if (portIndex >= PREFERRED_PROXY_PORTS.length) {
+        // 所有优先端口都被占用，使用随机端口
+        proxyServer!.listen(0, '0.0.0.0', () => {
+          const addr = proxyServer!.address() as { port: number };
+          proxyPort = addr.port;
+          console.log(`[proxy] listening on 0.0.0.0:${proxyPort} (random)`);
+          resolve(proxyPort);
+        });
+        return;
+      }
+
+      const port = PREFERRED_PROXY_PORTS[portIndex];
+      proxyServer!.listen(port, '0.0.0.0', () => {
+        proxyPort = port;
+        console.log(`[proxy] listening on 0.0.0.0:${proxyPort}`);
+        resolve(proxyPort);
+      }).on('error', () => {
+        // 端口被占用，尝试下一个
+        tryListen(portIndex + 1);
+      });
+    };
+
+    tryListen(0);
   });
 }
 

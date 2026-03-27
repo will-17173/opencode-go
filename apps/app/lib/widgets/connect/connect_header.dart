@@ -12,10 +12,14 @@ class ConnectHeader extends StatelessWidget {
 
     return Column(
       children: [
-        CircleAvatar(
-          radius: 38,
-          backgroundColor: colorScheme.primaryContainer,
-          child: Icon(Icons.hub_outlined, size: 38, color: colorScheme.primary),
+        ClipRRect(
+          borderRadius: BorderRadius.circular(16),
+          child: Image.asset(
+            'assets/images/app_icon.png',
+            width: 76,
+            height: 76,
+            fit: BoxFit.cover,
+          ),
         ),
         const SizedBox(height: AppSpacing.lg),
         Text(
