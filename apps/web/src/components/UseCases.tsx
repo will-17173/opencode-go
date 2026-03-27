@@ -16,7 +16,7 @@ export default function UseCases() {
   }>
 
   return (
-    <section id="use-cases" className="py-32 px-6 relative">
+    <section id="use-cases" className="py-16 px-6 relative">
       {/* 背景分隔线 */}
       <div
         className="absolute top-0 left-0 right-0 h-px"

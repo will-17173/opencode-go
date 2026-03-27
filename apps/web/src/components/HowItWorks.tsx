@@ -9,7 +9,7 @@ export default function HowItWorks() {
   }>
 
   return (
-    <section id="how-it-works" className="py-32 px-6 relative">
+    <section id="how-it-works" className="py-16 px-6 relative">
       <div className="max-w-4xl mx-auto">
         {/* 标题 */}
         <motion.div
