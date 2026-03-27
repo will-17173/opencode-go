@@ -15,7 +15,7 @@ export default function Download() {
   ]
 
   return (
-    <section id="download" className="py-16 px-6 relative">
+    <section id="download" className="py-10 px-6 relative">
       {/* 顶部分隔线 */}
       <div
         className="absolute top-0 left-0 right-0 h-px"

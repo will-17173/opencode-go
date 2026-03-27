@@ -13,7 +13,7 @@ export default function Features() {
   }>
 
   return (
-    <section id="features" className="py-16 px-6 relative">
+    <section id="features" className="py-10 px-6 relative">
       {/* 背景光晕 */}
       <div
         className="absolute pointer-events-none"
