@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:opencode_go/l10n/app_localizations.dart';
 
 import 'providers/connection_provider.dart';
+import 'providers/locale_provider.dart';
 import 'screens/chat_screen.dart';
 import 'screens/connect_screen.dart';
 import 'screens/home_screen.dart';
@@ -16,10 +19,23 @@ class OpenCodeGoApp extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final locale = ref.watch(localeProvider);
+
     return MaterialApp(
       title: 'OpenCode Go',
       debugShowCheckedModeBanner: false,
       theme: AppTheme.light,
+      localizationsDelegates: const [
+        AppLocalizations.delegate,
+        GlobalMaterialLocalizations.delegate,
+        GlobalWidgetsLocalizations.delegate,
+        GlobalCupertinoLocalizations.delegate,
+      ],
+      supportedLocales: const [
+        Locale('zh'),
+        Locale('en'),
+      ],
+      locale: locale,
       home: const _AppEntry(),
       routes: {
         '/connect': (_) => const ConnectScreen(),
