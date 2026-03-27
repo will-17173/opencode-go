@@ -1,0 +1,91 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  lint-desktop:
+    name: Lint Desktop
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run ESLint
+        run: npm run lint
+
+      - name: TypeScript check
+        working-directory: apps/desktop
+        run: npx tsc --noEmit
+
+  lint-mobile:
+    name: Lint Mobile
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: "3.x"
+          channel: stable
+          cache: true
+
+      - name: Install Flutter dependencies
+        working-directory: apps/app
+        run: flutter pub get
+
+      - name: Flutter analyze
+        working-directory: apps/app
+        run: flutter analyze
+
+  build-desktop:
+    name: Build Desktop (${{ matrix.os }})
+    needs: lint-desktop
+    runs-on: ${{ matrix.runner }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: macOS
+            runner: macos-latest
+            build_cmd: npm run make:mac
+          - os: Windows
+            runner: windows-latest
+            build_cmd: npm run make:win
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build
+        run: ${{ matrix.build_cmd }}
+        working-directory: apps/desktop
+        env:
+          # Skip code signing in CI
+          CSC_IDENTITY_AUTO_DISCOVERY: false
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: opencode-go-${{ matrix.os }}
+          path: |
+            apps/desktop/out/**/*.dmg
+            apps/desktop/out/**/*.exe
+          retention-days: 7

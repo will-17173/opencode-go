@@ -1,0 +1,5 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Discussion
+    url: https://github.com/will-17173/opencode-go/discussions
+    about: Ask questions and discuss ideas
