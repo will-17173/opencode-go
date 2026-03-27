@@ -32,6 +32,11 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from '@/components/ui/popover';
 import type { Project } from '@/hooks/useProjects';
 
 interface DebugStatus {
@@ -207,7 +212,7 @@ export function ConnectionPanel({
     <div className="h-full overflow-y-auto bg-gradient-to-b from-[#f5f7f8] via-[#f7f8fa] to-[#fafbfc] p-6 sm:p-8">
       <div className="mx-auto max-w-6xl space-y-6">
         <section className="rounded-2xl border border-border/60 bg-white px-4 py-3 shadow-[0_8px_24px_rgba(13,18,30,0.04)] sm:px-5">
-          <div className="grid gap-2.5 rounded-xl bg-[#fcfcfd] text-sm sm:grid-cols-2 lg:grid-cols-4">
+          <div className="grid gap-2.5 rounded-xl bg-[#fcfcfd] text-sm sm:grid-cols-2 lg:grid-cols-5">
             <div className="flex items-center gap-3 rounded-xl border border-border/60 bg-white px-3 py-2.5">
               <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-emerald-50 text-emerald-700">
                 <Activity className="h-4 w-4" />
@@ -254,58 +259,66 @@ export function ConnectionPanel({
               </div>
               {pairingCode ? <CopyBtn text={pairingCode} /> : null}
             </div>
-          </div>
-
-          <div className="mt-4 rounded-xl border border-border/60 bg-[#fcfcfd] p-4">
-            <div className="flex items-start justify-between gap-3">
-              <div>
-                <div className="flex items-center gap-2">
+            <Popover>
+              <PopoverTrigger asChild>
+                <div className="flex cursor-pointer items-center gap-3 rounded-xl border border-border/60 bg-white px-3 py-2.5 transition-colors hover:border-border">
                   <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-slate-100 text-slate-600">
                     <Smartphone className="h-4 w-4" />
                   </div>
-                  <div>
-                    <h3 className="text-sm font-semibold text-foreground">已连接设备</h3>
-                    <p className="text-xs text-muted-foreground">显示已配对设备，并根据最近活跃时间标记状态</p>
-                  </div>
-                </div>
-              </div>
-              <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                <span>在线 {summary.online}</span>
-                <span>·</span>
-                <span>最近 {summary.recent}</span>
-                <span>·</span>
-                <span>离线 {summary.offline}</span>
-              </div>
-            </div>
-
-            <div className="mt-4 space-y-2">
-              {devicesLoading ? (
-                <p className="text-sm text-muted-foreground">正在加载设备…</p>
-              ) : devices.length === 0 ? (
-                <div className="rounded-lg border border-dashed border-border/70 bg-white px-3 py-4 text-sm text-muted-foreground">
-                  暂无已配对设备，移动端完成配对后会显示在这里。
-                </div>
-              ) : (
-                devices.map((device) => (
-                  <div
-                    key={device.id}
-                    className="flex items-center justify-between gap-3 rounded-lg border border-border/60 bg-white px-3 py-3"
-                  >
-                    <div className="min-w-0">
-                      <div className="flex items-center gap-2">
-                        <p className="truncate text-sm font-semibold text-foreground">{device.name}</p>
-                        <DeviceStatusBadge status={device.status} />
-                      </div>
-                      <p className="mt-1 text-xs text-muted-foreground">
-                        {device.platform === 'ios' ? 'iOS' : device.platform === 'android' ? 'Android' : '未知平台'}
-                        {' · 最近活跃 '}
-                        {formatRelativeTime(device.lastSeenAt)}
-                      </p>
+                  <div className="min-w-0">
+                    <p className="text-[11px] uppercase tracking-[0.12em] text-muted-foreground">设备</p>
+                    <div className="flex items-center gap-1.5">
+                      {summary.online > 0 ? (
+                        <span className="h-2 w-2 rounded-full bg-emerald-500" />
+                      ) : null}
+                      <span className="font-medium text-foreground">
+                        {summary.online > 0 ? `${summary.online} 在线` : `${devices.length} 个`}
+                      </span>
                     </div>
                   </div>
-                ))
-              )}
-            </div>
+                </div>
+              </PopoverTrigger>
+              <PopoverContent className="w-80 p-0" align="start">
+                <div className="border-b border-border/60 px-4 py-3">
+                  <div className="flex items-center justify-between">
+                    <h3 className="text-sm font-semibold text-foreground">已连接设备</h3>
+                    <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                      <span>在线 {summary.online}</span>
+                      <span>·</span>
+                      <span>最近 {summary.recent}</span>
+                      <span>·</span>
+                      <span>离线 {summary.offline}</span>
+                    </div>
+                  </div>
+                </div>
+                <div className="max-h-60 overflow-y-auto">
+                  {devicesLoading ? (
+                    <p className="px-4 py-6 text-center text-sm text-muted-foreground">正在加载设备…</p>
+                  ) : devices.length === 0 ? (
+                    <p className="px-4 py-6 text-center text-sm text-muted-foreground">暂无已配对设备</p>
+                  ) : (
+                    devices.map((device) => (
+                      <div
+                        key={device.id}
+                        className="flex items-center justify-between gap-3 border-b border-border/40 px-4 py-3 last:border-b-0"
+                      >
+                        <div className="min-w-0">
+                          <div className="flex items-center gap-2">
+                            <p className="truncate text-sm font-medium text-foreground">{device.name}</p>
+                            <DeviceStatusBadge status={device.status} />
+                          </div>
+                          <p className="mt-0.5 text-xs text-muted-foreground">
+                            {device.platform === 'ios' ? 'iOS' : device.platform === 'android' ? 'Android' : '未知'}
+                            {' · '}
+                            {formatRelativeTime(device.lastSeenAt)}
+                          </p>
+                        </div>
+                      </div>
+                    ))
+                  )}
+                </div>
+              </PopoverContent>
+            </Popover>
           </div>
         </section>
 

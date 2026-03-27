@@ -1,8 +1,8 @@
 import { Settings, X } from 'lucide-react';
 import { ConnectionPanel } from '@/components/layout/ConnectionPanel';
 import { SettingsPanel } from '@/components/settings/SettingsPanel';
-import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
+import appIcon from '@/assets/icon.png';
 import type { useSettings } from '@/hooks/useSettings';
 import type { Project } from '@/hooks/useProjects';
 import type { UpdateState } from '@/hooks/useUpdater';
@@ -40,9 +40,16 @@ export function MainArea({
     <div className="flex h-full w-full flex-col overflow-hidden bg-background">
       {/* Header - 极简导航 */}
       <header className="flex h-14 shrink-0 items-center justify-between border-b border-border px-6">
-        <span className="text-lg font-semibold tracking-tight">
-          OpenCode Go
-        </span>
+        <div className="flex items-center gap-3">
+          <img
+            src={appIcon}
+            alt="OpenCode Go"
+            className="h-8 w-8 rounded-xl"
+          />
+          <span className="text-lg font-semibold tracking-tight">
+            OpenCode Go
+          </span>
+        </div>
         <button
           onClick={() => onShowSettings(!showSettings)}
           className={cn(
