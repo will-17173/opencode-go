@@ -223,17 +223,11 @@ function saveSettings(settings: AppSettings) {
   fs.writeFileSync(getSettingsPath(), JSON.stringify(settings, null, 2), 'utf-8');
 }
 
-type ProviderType =
-  | 'openai'
-  | 'anthropic'
-  | 'google'
-  | 'azure-openai'
-  | 'deepseek'
-  | 'moonshot'
-  | 'openai-compatible'
-  | 'anthropic-compatible';
+// ProviderType 支持动态 provider ID（如 openrouter, xai 等）
+// 保留固定类型提示，但实际接受任意字符串
+type ProviderType = string;
 
-type ProviderID = 'openai' | 'anthropic' | 'openai-compatible' | 'anthropic-compatible';
+type ProviderID = 'openai' | 'anthropic' | 'openai-compatible' | 'anthropic-compatible' | string;
 
 interface EffectiveProviderConfig {
   providerType: ProviderType;
@@ -265,7 +259,8 @@ async function retryOpencodeCall<T>(action: string, fn: () => Promise<T>, retrie
   throw new Error(`[opencode] ${action} failed after retries: ${formatUnknownError(lastError)}`);
 }
 
-function providerTypeToProviderID(providerType: ProviderType): ProviderID | null {
+function providerTypeToProviderID(providerType: ProviderType): ProviderID {
+  // 官方 provider 直接返回
   if (providerType === 'openai') return 'openai';
   if (providerType === 'anthropic') return 'anthropic';
   if (providerType === 'openai-compatible') return 'openai-compatible';
@@ -274,27 +269,19 @@ function providerTypeToProviderID(providerType: ProviderType): ProviderID | null
   if (providerType === 'google' || providerType === 'azure-openai' || providerType === 'deepseek' || providerType === 'moonshot') {
     return 'openai-compatible';
   }
-  return null;
+  // 其他动态 provider（如 openrouter, xai）直接使用其 ID
+  return providerType;
 }
 
 function isProviderType(value: string): value is ProviderType {
-  return [
-    'openai',
-    'anthropic',
-    'google',
-    'azure-openai',
-    'deepseek',
-    'moonshot',
-    'openai-compatible',
-    'anthropic-compatible',
-  ].includes(value);
+  // 支持任意非空字符串作为 providerType（动态 provider）
+  return typeof value === 'string' && value.trim().length > 0;
 }
 
 function getEffectiveProviderConfig(settings: AppSettings): EffectiveProviderConfig | null {
   const active = settings.activeProviderConfig;
   if (active && isProviderType(active.providerType)) {
     const providerID = providerTypeToProviderID(active.providerType);
-    if (!providerID) return null;
     return {
       providerType: active.providerType,
       providerID,
@@ -656,7 +643,7 @@ async function applyAiSdkSettingsToOpencode(settings: AppSettings) {
   const client = getClient();
 
   // openai / anthropic 原生 provider 使用 auth.set 设置 apiKey
-  // openai-compatible / anthropic-compatible 不支持 auth.set，apiKey 需在 options 中传入
+  // 其他 provider（compatible、动态 provider）不支持 auth.set，apiKey 需在 options 中传入
   const needsAuthSet = runtimeProviderID === 'openai' || runtimeProviderID === 'anthropic';
   if (needsAuthSet) {
     console.log('[applyAiSdkSettingsToOpencode] setting auth for provider:', runtimeProviderID);
@@ -674,9 +661,12 @@ async function applyAiSdkSettingsToOpencode(settings: AppSettings) {
   if (effective.baseURL) {
     providerOptions.baseURL = effective.baseURL;
   }
-  // compatible 类型需要在 options 中传入 apiKey 和 name
-  if (runtimeProviderID === 'openai-compatible' || runtimeProviderID === 'anthropic-compatible') {
+  // 非官方 provider（compatible、动态 provider）需要在 options 中传入 apiKey
+  if (!needsAuthSet) {
     providerOptions.apiKey = effective.apiKey;
+  }
+  // compatible 类型额外设置 name
+  if (runtimeProviderID === 'openai-compatible' || runtimeProviderID === 'anthropic-compatible') {
     providerOptions.name = runtimeProviderID === 'openai-compatible' ? 'OpenAICompatible' : 'AnthropicCompatible';
   }
 
@@ -715,6 +705,9 @@ async function ensureDirectoryRuntimeModel(directory: string, effective: Effecti
   const { timeout } = PROVIDER_CONFIG;
   const client = getClient();
 
+  // 官方 provider 使用 auth.set，其他 provider 在 options 中传入 apiKey
+  const needsAuthSet = runtimeProviderID === 'openai' || runtimeProviderID === 'anthropic';
+
   const providerOptions: Record<string, unknown> = {
     timeout,
   };
@@ -722,8 +715,12 @@ async function ensureDirectoryRuntimeModel(directory: string, effective: Effecti
   if (effective.baseURL) {
     providerOptions.baseURL = effective.baseURL;
   }
-  if (runtimeProviderID === 'openai-compatible' || runtimeProviderID === 'anthropic-compatible') {
+  // 非官方 provider（compatible、动态 provider）需要在 options 中传入 apiKey
+  if (!needsAuthSet) {
     providerOptions.apiKey = effective.apiKey;
+  }
+  // compatible 类型额外设置 name
+  if (runtimeProviderID === 'openai-compatible' || runtimeProviderID === 'anthropic-compatible') {
     providerOptions.name = runtimeProviderID === 'openai-compatible' ? 'OpenAICompatible' : 'AnthropicCompatible';
   }
 
@@ -1329,7 +1326,7 @@ async function handlePostSettings(req: http.IncomingMessage, res: http.ServerRes
     return;
   }
 
-  const runtimeProviderID = providerTypeToProviderID(nextConfig.providerType) ?? 'openai';
+  const runtimeProviderID = providerTypeToProviderID(nextConfig.providerType);
   const legacyProviderIDForCompat: 'anthropic' | 'openai' =
     runtimeProviderID === 'anthropic' ? 'anthropic' : 'openai';
 
