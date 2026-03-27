@@ -67,9 +67,36 @@ jobs:
             apps/desktop/out/**/latest.yml
           retention-days: 1
 
+  build-android:
+    name: Build Android APK
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: "3.x"
+          channel: stable
+          cache: true
+
+      - name: Install Flutter dependencies
+        working-directory: apps/app
+        run: flutter pub get
+
+      - name: Build APK
+        working-directory: apps/app
+        run: flutter build apk --release
+
+      - name: Upload Android artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: release-android
+          path: apps/app/build/app/outputs/flutter-apk/*.apk
+          retention-days: 1
+
   release:
     name: Create GitHub Release
-    needs: [build-mac, build-win]
+    needs: [build-mac, build-win, build-android]
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -85,6 +112,12 @@ jobs:
         with:
           name: release-win
           path: artifacts/win
+
+      - name: Download Android artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: release-android
+          path: artifacts/android
 
       - name: Extract changelog for this version
         id: changelog
@@ -107,3 +140,4 @@ jobs:
             artifacts/mac/**/latest-mac.yml
             artifacts/win/**/*.exe
             artifacts/win/**/latest.yml
+            artifacts/android/*.apk
