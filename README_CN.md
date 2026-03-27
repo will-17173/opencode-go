@@ -2,214 +2,97 @@
 
 > **注意：** 本项目目前处于活跃开发中。
 
-OpenCode Go 是一个让你在**手机上远程连接并继续操控电脑上的 OpenCode** 的项目。
+OpenCode Go 让你通过**专用手机应用**远程连接和控制电脑上的 OpenCode。
 
-它由两个部分组成：
-- **Desktop**：基于 Electron + Vite + TypeScript 的桌面端，负责运行内嵌 OpenCode 后端、管理工作目录，并暴露局域网访问入口
-- **Mobile**：基于 Flutter 的移动端，用于通过手机查看电脑上的工作目录、历史会话，并继续发起 AI 对话
+## 核心功能
 
-如果你经常在电脑上用 OpenCode 写代码、查资料、跑 AI 工作流，但又希望离开座位后继续在手机上查看和推进会话，OpenCode Go 就是为这个场景准备的。
+- **远程连接**：手机远程连接到电脑上的 OpenCode
+- **工作区浏览**：在手机上查看电脑上的所有工作目录
+- **对话历史**：浏览历史对话记录，随时继续之前的对话
+- **实时响应**：支持 AI 流式输出，实时查看回复
+- **图片附件**：从手机发送图片给 AI 分析
+- **工具步骤**：查看 AI 调用工具的执行状态
 
-## 核心能力
+## 使用场景
 
-### 已实现
-
-- 手机通过 **IP + 端口 + 6 位配对码** 连接桌面端 OpenCode Go
-- 桌面端显示 **在线状态、本机 IP、代理端口、配对码**，便于移动端连接
-- 手机端可浏览电脑上的 **工作目录列表**
-- 手机端可进入目录查看 **历史会话**，也可新建对话
-- 支持 **流式 AI 回复（SSE）**，能持续看到输出过程
-- 支持 **图片附件上传** 后发送给 AI
-- 支持在移动端查看 **工具步骤 / 执行状态**
-- 连接丢失时，移动端会自动回到连接页，方便重新接入
-
-### 适合的使用场景
-
-- 在电脑上开启 OpenCode，出门或离开工位后在手机上继续追问
-- 躺着、通勤中、开会间隙快速查看某个项目目录下的 AI 会话
-- 给 AI 补发一张手机截图或照片，让它继续分析
-- 远程确认某次工具调用、AI 输出、历史上下文是否正常
-
-## 它是如何工作的
-
-OpenCode Go 当前的核心并不是"手机完全替代电脑端 UI"，而是让手机成为电脑端 OpenCode 的**远程 companion**。
-
-基本流程如下：
-
-1. Desktop 启动内嵌 OpenCode 后端
-2. Electron 主进程启动一个可被局域网访问的 HTTP 代理服务
-3. Desktop 界面展示本机 IP、动态代理端口和 6 位配对码
-4. Mobile 输入 `IP:Port` 与配对码后连接桌面端
-5. Mobile 通过 HTTP + SSE 访问目录、会话、聊天和流式输出接口
-6. 非 localhost 请求需要携带 `X-Pairing-Code`，用于远程访问鉴权
-
-> 当前仓库已有实现更适合描述为**局域网 / 同网络环境下的远程连接**。README 不把它表述为"任意公网环境下的完整远控方案"。
-
-## 仓库结构
-
-```text
-apps/
-├── desktop/   # Electron 桌面端
-└── app/       # Flutter 移动端
-```
-
-### Desktop
-
-桌面端负责：
-- 启动内嵌 OpenCode 后端
-- 维护模型设置、工作目录、技能等本地数据
-- 提供代理 API 给渲染进程和移动端访问
-- 提供配对码与网络信息，作为手机连接入口
-
-### Mobile
-
-移动端负责：
-- 连接桌面端代理
-- 保存最近一次成功连接的主机地址和配对码
-- 浏览工作目录与历史会话
-- 发送消息、接收流式回复
-- 上传图片附件并继续对话
+- 在电脑上启动 OpenCode，离开工位时在手机上继续提问
+- 躺着、通勤或会议间隙浏览项目中的 AI 对话
+- 发送手机截图或照片给 AI 分析
+- 远程查看工具调用、AI 输出或历史上下文
 
 ## 快速开始
 
-### 1）启动桌面端
+### 1. 安装桌面应用
 
-在仓库根目录执行：
+从 [Releases](https://github.com/your-repo/releases) 页面下载适合你系统的安装包：
 
-```bash
-npm install
-npm start
-```
+- **macOS**: 下载 `.dmg` 文件
+- **Windows**: 下载 `.exe` 安装程序
 
-启动后，在桌面端界面中确认：
-- 本机 IP
-- 代理端口
-- 配对码
+安装并打开应用。
 
-### 2）启动移动端
+### 2. 连接手机
 
-进入移动端目录并运行 Flutter App：
+打开桌面应用后，你会看到：
 
-```bash
-cd apps/app
-flutter pub get
-flutter run
-```
+- **本机 IP 地址**
+- **端口号**
+- **6 位配对码**
 
-在连接页输入：
-- 电脑所在设备的 **IP 地址**
-- Desktop 显示的 **端口**
-- Desktop 显示的 **6 位配对码**
+确保手机和电脑在**同一网络**下，或使用 [Tailscale](https://tailscale.com) 实现远程访问（见下方常见问题）。
+
+### 3. 手机端操作
+
+1. 在手机上打开 OpenCode Go 应用
+2. 输入桌面应用显示的 IP 地址和端口
+3. 输入 6 位配对码
+4. 点击连接
 
 连接成功后，你就可以：
-- 查看桌面端已有工作目录
-- 打开某个目录下的历史会话
-- 新建对话并继续和 AI 交互
-- 在手机上补充图片附件
 
-## 开发
+- 查看电脑上的工作目录列表
+- 打开目录查看对话历史
+- 创建新对话与 AI 交互
+- 发送图片附件
 
-### 根目录常用命令
+## 常见问题
 
-```bash
-npm install
-npm start
-npm run lint
-```
+### 连接失败怎么办？
 
-### Desktop（apps/desktop）
+- 确保手机和电脑在同一网络下
+- 检查防火墙是否阻止了应用的网络访问
+- 确认 IP 地址、端口和配对码输入正确
 
-```bash
-npm start
-npm run lint
-npx tsc --noEmit
-```
+### 配对码会变吗？
 
-### Mobile（apps/app）
+配对码会保持不变，除非你在桌面应用的设置中手动重新生成。
 
-```bash
-flutter pub get
-flutter analyze
-flutter test
-flutter run
-```
+### 支持哪些网络环境？
 
-## 构建
+OpenCode Go 支持**本地网络**连接，也可以通过 [Tailscale](https://tailscale.com) 实现**公网远程连接**：
 
-### Desktop 打包
+1. 在电脑和手机上分别安装 Tailscale
+2. 两个设备登录同一个 Tailscale 账号
+3. 在手机上使用电脑的 Tailscale IP（以 `100.` 开头）进行连接
 
-```bash
-npm run make
-npm run make:mac
-npm run make:win
-npm run make:all
-```
+Tailscale 会创建一个安全的虚拟局域网，让你可以从任何地方连接，无需将电脑暴露在公网。
 
-构建产物输出到 `out/` 目录。
+## 与 OpenClaw 对比
 
-### 发布
+| 功能 | OpenCode Go | OpenClaw |
+|------|-------------|----------|
+| **定位** | 远程 OpenCode 伴侣 | 多渠道个人 AI 助手 |
+| **核心用途** | 在手机上继续 AI 会话 | 在 WhatsApp/Telegram/Slack/Discord 等平台使用 AI |
+| **部署方式** | 桌面应用 + 手机应用 | Gateway 守护进程 + 连接现有聊天账号 |
+| **接入渠道** | 专用手机应用 | WhatsApp、Telegram、Slack、Discord、微信等 |
+| **AI 侧重** | 编程、文件操作、工具执行 | 日常对话、自动化、技能 |
+| **工作空间** | 电脑上的工作目录 | 工作区 + 每个代理独立会话 |
+| **远程访问** | 本地网络 / Tailscale | 支持 Tailscale / SSH 隧道 |
 
-```bash
-npm run publish
-npm run publish:mac
-```
+**OpenCode Go** 适合想要在手机上**继续 OpenCode AI 会话**的用户——查看项目上下文、发送图片分析、监控工具执行。
 
-发布脚本位于 `scripts/publish.mjs`，用于整理安装包和更新清单文件。
+**OpenClaw** 适合想要在**现有聊天应用上使用个人 AI 助手**的用户——支持 WhatsApp、Telegram、Slack、Discord、微信等 20+ 平台，专注于多渠道覆盖和通用 AI 辅助。
 
-## 技术架构
+## 反馈与支持
 
-| 层 | 技术 |
-|---|---|
-| 桌面框架 | Electron 40 |
-| 桌面 UI | React 19 + Tailwind CSS v3 + shadcn/ui |
-| 构建工具 | Vite 5 |
-| 移动端 | Flutter + Riverpod |
-| 网络通信 | HTTP + SSE |
-| AI 后端 | 内嵌 `opencode serve` 二进制 |
-
-## 关键实现线索
-
-如果你想快速理解"手机远程操控电脑端 OpenCode"是如何落地的，可以优先看这些文件：
-
-- `apps/desktop/src/components/layout/ConnectionPanel.tsx`
-  桌面端展示 IP、端口、配对码、状态
-- `apps/desktop/src/main.ts`
-  代理服务器、`/api/health`、`/api/network/info`、配对码校验、聊天转发
-- `apps/app/lib/screens/connect_screen.dart`
-  移动端连接与配对验证流程
-- `apps/app/lib/providers/connection_provider.dart`
-  连接状态与配对码持久化
-- `apps/app/lib/screens/home_screen.dart`
-  工作目录与历史会话浏览
-- `apps/app/lib/screens/chat_screen.dart`
-  手机端聊天、图片附件、消息展示
-- `apps/app/lib/services/api_client.dart`
-  `X-Pairing-Code` 请求头注入、SSE 流式消息处理
-
-## Roadmap
-
-### 已完成的基础远程能力
-
-- [x] Desktop 端内嵌 OpenCode 并启动本地代理
-- [x] 局域网连接与配对码鉴权
-- [x] 移动端目录/历史会话浏览
-- [x] 移动端新建对话与继续会话
-- [x] 流式回复、工具步骤展示
-- [x] 图片附件发送
-
-### 接下来计划增强
-
-- [ ] 更完整的"远程操控"体验，而不仅是远程聊天
-- [ ] 更顺滑的连接引导与配对流程
-- [ ] 更丰富的移动端会话管理能力
-- [ ] 更完善的移动端调试/设置能力
-- [ ] 更明确的安装与分发方式
-- [ ] 探索超出局域网场景的连接方案
-
-## 注意事项
-
-- 当前更适合在**同一局域网 / 同一网络环境**下使用
-- README 中提到的远程能力，优先基于仓库内已有代码实现
-- 目前移动端的重点是"继续电脑上的 OpenCode 会话"，而不是完全复刻桌面端全部功能
-
-如果你想把这个项目打造成真正的"手机操控电脑上的 OpenCode"入口，那么这份仓库已经具备了很好的基础：桌面端负责运行和暴露能力，移动端负责远程接入与持续交互。
+如果你遇到问题或有功能建议，欢迎在 [Issues](https://github.com/your-repo/issues) 中反馈。
