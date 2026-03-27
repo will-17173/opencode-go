@@ -4,7 +4,10 @@
     "subtitle": "Control Desktop OpenCode from Your Phone",
     "description": "Left your computer? Take your AI sessions with you. Pair over LAN and continue your OpenCode workflow from anywhere.",
     "cta_github": "View on GitHub",
-    "cta_download": "Download"
+    "cta_download": "Download",
+    "feat1": "LAN-only, low latency, no cloud needed",
+    "feat2": "6-digit pairing code, secure connection",
+    "feat3": "Image upload & real-time streaming"
   },
   "features": {
     "title": "Core Features",

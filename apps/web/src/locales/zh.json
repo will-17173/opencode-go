@@ -4,7 +4,10 @@
     "subtitle": "随时随地，用手机控制桌面 OpenCode",
     "description": "离开电脑？带上你的 AI 对话。通过局域网配对，在手机上继续你的 OpenCode 会话。",
     "cta_github": "在 GitHub 上查看",
-    "cta_download": "下载应用"
+    "cta_download": "下载应用",
+    "feat1": "局域网低延迟，无需公网",
+    "feat2": "6 位配对码，安全连接",
+    "feat3": "支持图片上传 & 流式响应"
   },
   "features": {
     "title": "核心功能",
