@@ -1,0 +1,80 @@
+{
+  "hero": {
+    "title": "OpenCode Go",
+    "subtitle": "Control Desktop OpenCode from Your Phone",
+    "description": "Left your computer? Take your AI sessions with you. Pair over LAN and continue your OpenCode workflow from anywhere.",
+    "cta_github": "View on GitHub",
+    "cta_download": "Download"
+  },
+  "features": {
+    "title": "Core Features",
+    "items": [
+      {
+        "title": "Pairing Code Connect",
+        "description": "IP + Port + 6-digit code — connect to your desktop over LAN instantly"
+      },
+      {
+        "title": "Streaming AI Responses",
+        "description": "Real-time SSE streaming so you see AI thinking as it happens"
+      },
+      {
+        "title": "Image Attachment Upload",
+        "description": "Take a photo and send it to AI — your camera becomes an input device"
+      },
+      {
+        "title": "Tool Step Visibility",
+        "description": "View AI tool calls and execution status, stay in full control"
+      },
+      {
+        "title": "Conversation History",
+        "description": "Browse all sessions by working directory, revisit any conversation"
+      },
+      {
+        "title": "Auto-Reconnect",
+        "description": "Automatic reconnect prompt on disconnect, no context lost"
+      }
+    ]
+  },
+  "how_it_works": {
+    "title": "How It Works",
+    "steps": [
+      { "title": "Start Desktop", "description": "Launch the Electron app — the embedded OpenCode backend starts automatically" },
+      { "title": "Get Connection Info", "description": "Desktop UI shows your local IP, proxy port, and 6-digit pairing code" },
+      { "title": "Enter on Mobile", "description": "Type IP:Port and pairing code into the mobile app" },
+      { "title": "Paired", "description": "Verified — a secure LAN connection is established" },
+      { "title": "Start Chatting", "description": "Browse working directories, create or continue AI sessions" }
+    ]
+  },
+  "use_cases": {
+    "title": "Use Cases",
+    "items": [
+      {
+        "title": "Commuting",
+        "description": "Keep the conversation going on the subway — don't break your flow"
+      },
+      {
+        "title": "Away from Desk",
+        "description": "Browse project sessions from the couch, review AI analysis results"
+      },
+      {
+        "title": "Photo Analysis",
+        "description": "Snap a screenshot or whiteboard photo, send it straight to AI"
+      }
+    ]
+  },
+  "download": {
+    "title": "Get Started",
+    "description": "Download the desktop app and mobile app to start your mobile AI workflow",
+    "macos": "Download for macOS",
+    "windows": "Download for Windows",
+    "mobile": "Mobile App",
+    "coming_soon": "Coming soon — visit GitHub Releases",
+    "github_releases": "GitHub Releases"
+  },
+  "footer": {
+    "copyright": "© 2026 OpenCode Go. MIT License.",
+    "github": "GitHub",
+    "lang_zh": "中文",
+    "lang_en": "English"
+  }
+}

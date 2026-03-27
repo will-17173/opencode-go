@@ -1,0 +1,80 @@
+{
+  "hero": {
+    "title": "OpenCode Go",
+    "subtitle": "随时随地，用手机控制桌面 OpenCode",
+    "description": "离开电脑？带上你的 AI 对话。通过局域网配对，在手机上继续你的 OpenCode 会话。",
+    "cta_github": "在 GitHub 上查看",
+    "cta_download": "下载应用"
+  },
+  "features": {
+    "title": "核心功能",
+    "items": [
+      {
+        "title": "配对码连接",
+        "description": "IP + 端口 + 6 位配对码，局域网内一键连接桌面端"
+      },
+      {
+        "title": "流式 AI 响应",
+        "description": "SSE 实时流式输出，在手机上即时看到 AI 思考过程"
+      },
+      {
+        "title": "图片附件上传",
+        "description": "拍照发给 AI，让手机摄像头成为你的输入设备"
+      },
+      {
+        "title": "工具步骤查看",
+        "description": "查看 AI 调用的工具步骤和执行状态，掌握全局"
+      },
+      {
+        "title": "历史对话浏览",
+        "description": "按工作目录浏览全部对话历史，随时回顾"
+      },
+      {
+        "title": "自动重连",
+        "description": "断线后自动提示重连，不丢失对话上下文"
+      }
+    ]
+  },
+  "how_it_works": {
+    "title": "工作原理",
+    "steps": [
+      { "title": "启动桌面端", "description": "运行 Electron 应用，内嵌 OpenCode 后端自动启动" },
+      { "title": "获取连接信息", "description": "桌面 UI 显示本机 IP、代理端口和 6 位配对码" },
+      { "title": "手机输入连接", "description": "在手机 App 中输入 IP:端口 和配对码" },
+      { "title": "配对成功", "description": "验证通过，建立安全的局域网连接" },
+      { "title": "开始对话", "description": "浏览工作目录，创建或继续 AI 对话" }
+    ]
+  },
+  "use_cases": {
+    "title": "使用场景",
+    "items": [
+      {
+        "title": "通勤途中",
+        "description": "在地铁或公交上继续追问 AI，不打断工作思路"
+      },
+      {
+        "title": "离桌休息",
+        "description": "躺在沙发上浏览项目对话记录，回顾 AI 分析结果"
+      },
+      {
+        "title": "现场拍照分析",
+        "description": "拍下屏幕截图或白板，直接发给 AI 进行分析"
+      }
+    ]
+  },
+  "download": {
+    "title": "立即开始",
+    "description": "下载桌面端和手机 App，开启移动 AI 工作流",
+    "macos": "macOS 下载",
+    "windows": "Windows 下载",
+    "mobile": "手机 App",
+    "coming_soon": "即将发布，访问 GitHub Releases",
+    "github_releases": "GitHub Releases"
+  },
+  "footer": {
+    "copyright": "© 2026 OpenCode Go. MIT License.",
+    "github": "GitHub",
+    "lang_zh": "中文",
+    "lang_en": "English"
+  }
+}

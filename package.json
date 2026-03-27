@@ -15,6 +15,7 @@
     "make:all": "npm run make:all -w opencode-go",
     "publish": "npm run publish -w opencode-go",
     "publish:mac": "npm run publish:mac -w opencode-go",
-    "lint": "npm run lint -w opencode-go"
+    "lint": "npm run lint -w opencode-go",
+    "build:web": "npm run build -w opencode-go-web"
   }
 }
