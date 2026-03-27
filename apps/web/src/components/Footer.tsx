@@ -53,8 +53,8 @@ export default function Footer() {
                 onClick={() => switchLang(lang)}
                 className="px-3 py-1.5 transition-all duration-200"
                 style={{
-                  background: i18n.language === lang ? 'rgba(99,102,241,0.2)' : 'transparent',
-                  color: i18n.language === lang ? '#818cf8' : '#b0b7c3',
+                  background: i18n.language === lang ? 'rgba(40,175,96,0.2)' : 'transparent',
+                  color: i18n.language === lang ? '#4ade80' : '#b0b7c3',
                   cursor: 'pointer',
                   border: 'none',
                 }}

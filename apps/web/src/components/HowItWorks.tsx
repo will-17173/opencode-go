@@ -22,9 +22,9 @@ export default function HowItWorks() {
           <div
             className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-medium mb-4"
             style={{
-              background: 'rgba(139,92,246,0.1)',
-              border: '1px solid rgba(139,92,246,0.2)',
-              color: '#a78bfa',
+              background: 'rgba(34,197,94,0.1)',
+              border: '1px solid rgba(34,197,94,0.2)',
+              color: '#86efac',
             }}
           >
             {t('how_it_works.title')}
@@ -49,7 +49,7 @@ export default function HowItWorks() {
               top: '28px',
               bottom: '28px',
               width: '1px',
-              background: 'linear-gradient(180deg, rgba(99,102,241,0.5) 0%, rgba(139,92,246,0.2) 100%)',
+              background: 'linear-gradient(180deg, rgba(40,175,96,0.5) 0%, rgba(34,197,94,0.2) 100%)',
             }}
           />
 
@@ -68,11 +68,11 @@ export default function HowItWorks() {
                   className="relative z-10 flex-shrink-0 w-14 h-14 rounded-2xl flex items-center justify-center font-bold text-lg"
                   style={{
                     background: i === 0
-                      ? 'linear-gradient(135deg, #6366f1, #8b5cf6)'
+                      ? 'linear-gradient(135deg, #28AF60, #22c55e)'
                       : 'rgba(255,255,255,0.12)',
                     border: `1px solid ${i === 0 ? 'transparent' : 'rgba(255,255,255,0.13)'}`,
                     color: i === 0 ? '#fff' : '#b0b7c3',
-                    boxShadow: i === 0 ? '0 0 20px rgba(99,102,241,0.4)' : 'none',
+                    boxShadow: i === 0 ? '0 0 20px rgba(40,175,96,0.4)' : 'none',
                   }}
                 >
                   {i + 1}

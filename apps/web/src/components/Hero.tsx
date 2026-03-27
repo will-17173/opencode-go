@@ -24,7 +24,7 @@ export default function Hero() {
             left: '-5%',
             width: '700px',
             height: '700px',
-            background: 'radial-gradient(ellipse, rgba(99,102,241,0.15) 0%, transparent 65%)',
+            background: 'radial-gradient(ellipse, rgba(40,175,96,0.15) 0%, transparent 65%)',
             filter: 'blur(60px)',
           }}
         />
@@ -36,7 +36,7 @@ export default function Hero() {
             right: '5%',
             width: '500px',
             height: '500px',
-            background: 'radial-gradient(ellipse, rgba(139,92,246,0.1) 0%, transparent 65%)',
+            background: 'radial-gradient(ellipse, rgba(34,197,94,0.1) 0%, transparent 65%)',
             filter: 'blur(80px)',
           }}
         />
@@ -44,8 +44,8 @@ export default function Hero() {
         <div
           className="absolute inset-0 opacity-[0.07]"
           style={{
-            backgroundImage: `linear-gradient(rgba(99,102,241,0.8) 1px, transparent 1px),
-              linear-gradient(90deg, rgba(99,102,241,0.8) 1px, transparent 1px)`,
+            backgroundImage: `linear-gradient(rgba(40,175,96,0.8) 1px, transparent 1px),
+              linear-gradient(90deg, rgba(40,175,96,0.8) 1px, transparent 1px)`,
             backgroundSize: '60px 60px',
           }}
         />
@@ -67,9 +67,9 @@ export default function Hero() {
             <motion.div
               className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full mb-8 text-xs font-medium"
               style={{
-                background: 'rgba(99,102,241,0.1)',
-                border: '1px solid rgba(99,102,241,0.25)',
-                color: '#a5b4fc',
+                background: 'rgba(40,175,96,0.1)',
+                border: '1px solid rgba(40,175,96,0.25)',
+                color: '#bbf7d0',
               }}
               initial={{ opacity: 0, x: -20 }}
               animate={{ opacity: 1, x: 0 }}
@@ -77,7 +77,7 @@ export default function Hero() {
             >
               <span
                 className="w-1.5 h-1.5 rounded-full"
-                style={{ background: '#6366f1', boxShadow: '0 0 6px #6366f1' }}
+                style={{ background: '#28AF60', boxShadow: '0 0 6px #28AF60' }}
               />
               OpenCode Mobile Companion
             </motion.div>
@@ -99,7 +99,7 @@ export default function Hero() {
               <span
                 className="block text-3xl md:text-4xl lg:text-5xl mt-3"
                 style={{
-                  background: 'linear-gradient(135deg, #818cf8 0%, #c084fc 50%, #818cf8 100%)',
+                  background: 'linear-gradient(135deg, #4ade80 0%, #86efac 50%, #4ade80 100%)',
                   backgroundSize: '200% auto',
                   WebkitBackgroundClip: 'text',
                   WebkitTextFillColor: 'transparent',
@@ -132,15 +132,15 @@ export default function Hero() {
                 href="#download"
                 className="group inline-flex items-center justify-center gap-2 px-7 py-3.5 rounded-xl font-semibold text-white transition-all duration-300"
                 style={{
-                  background: 'linear-gradient(135deg, #6366f1, #8b5cf6)',
-                  boxShadow: '0 0 30px rgba(99,102,241,0.35), 0 4px 15px rgba(0,0,0,0.4)',
+                  background: 'linear-gradient(135deg, #28AF60, #22c55e)',
+                  boxShadow: '0 0 30px rgba(40,175,96,0.35), 0 4px 15px rgba(0,0,0,0.4)',
                 }}
                 onMouseEnter={(e) => {
-                  e.currentTarget.style.boxShadow = '0 0 50px rgba(99,102,241,0.55), 0 4px 20px rgba(0,0,0,0.4)'
+                  e.currentTarget.style.boxShadow = '0 0 50px rgba(40,175,96,0.55), 0 4px 20px rgba(0,0,0,0.4)'
                   e.currentTarget.style.transform = 'translateY(-1px)'
                 }}
                 onMouseLeave={(e) => {
-                  e.currentTarget.style.boxShadow = '0 0 30px rgba(99,102,241,0.35), 0 4px 15px rgba(0,0,0,0.4)'
+                  e.currentTarget.style.boxShadow = '0 0 30px rgba(40,175,96,0.35), 0 4px 15px rgba(0,0,0,0.4)'
                   e.currentTarget.style.transform = 'translateY(0)'
                 }}
               >
@@ -183,9 +183,9 @@ export default function Hero() {
                 <div key={feat} className="flex items-center gap-2.5">
                   <div
                     className="flex-shrink-0 w-4 h-4 rounded-full flex items-center justify-center"
-                    style={{ background: 'rgba(99,102,241,0.2)', border: '1px solid rgba(99,102,241,0.4)' }}
+                    style={{ background: 'rgba(40,175,96,0.2)', border: '1px solid rgba(40,175,96,0.4)' }}
                   >
-                    <Check className="w-2.5 h-2.5" style={{ color: '#818cf8' }} />
+                    <Check className="w-2.5 h-2.5" style={{ color: '#4ade80' }} />
                   </div>
                   <span className="text-sm" style={{ color: '#6b7280' }}>{feat}</span>
                 </div>
@@ -206,7 +206,7 @@ export default function Hero() {
               className="absolute pointer-events-none"
               style={{
                 inset: '-40px',
-                background: 'radial-gradient(ellipse 80% 70% at 60% 50%, rgba(99,102,241,0.12) 0%, transparent 70%)',
+                background: 'radial-gradient(ellipse 80% 70% at 60% 50%, rgba(40,175,96,0.12) 0%, transparent 70%)',
               }}
             />
 
@@ -252,7 +252,7 @@ export default function Hero() {
                     </div>
                     <div
                       className="rounded-xl px-4 py-2.5 text-sm inline-block max-w-xs"
-                      style={{ background: 'rgba(99,102,241,0.15)', border: '1px solid rgba(99,102,241,0.2)', color: '#c7d2fe' }}
+                      style={{ background: 'rgba(40,175,96,0.15)', border: '1px solid rgba(40,175,96,0.2)', color: '#bbf7d0' }}
                     >
                       帮我优化这个函数的性能
                     </div>
@@ -288,7 +288,7 @@ export default function Hero() {
                     </div>
                     <div
                       className="rounded-xl px-4 py-2.5 text-sm inline-block max-w-xs"
-                      style={{ background: 'rgba(99,102,241,0.15)', border: '1px solid rgba(99,102,241,0.2)', color: '#c7d2fe' }}
+                      style={{ background: 'rgba(40,175,96,0.15)', border: '1px solid rgba(40,175,96,0.2)', color: '#bbf7d0' }}
                     >
                       还有其他优化思路吗？
                     </div>
@@ -301,7 +301,7 @@ export default function Hero() {
                         <motion.div
                           key={i}
                           className="w-1.5 h-1.5 rounded-full"
-                          style={{ background: '#6366f1' }}
+                          style={{ background: '#28AF60' }}
                           animate={{ opacity: [0.3, 1, 0.3], y: [0, -3, 0] }}
                           transition={{ duration: 1.2, delay: i * 0.2, repeat: Infinity }}
                         />
@@ -322,7 +322,7 @@ export default function Hero() {
                 </span>
                 <div
                   className="w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0"
-                  style={{ background: 'linear-gradient(135deg, #6366f1, #8b5cf6)' }}
+                  style={{ background: 'linear-gradient(135deg, #28AF60, #22c55e)' }}
                 >
                   <ArrowRight className="w-3.5 h-3.5 text-white" />
                 </div>
@@ -337,8 +337,8 @@ export default function Hero() {
                 bottom: '16px',
                 right: '-16px',
                 background: 'rgba(13,13,20,0.95)',
-                border: '1px solid rgba(99,102,241,0.3)',
-                boxShadow: '0 20px 50px rgba(0,0,0,0.5), 0 0 30px rgba(99,102,241,0.15)',
+                border: '1px solid rgba(40,175,96,0.3)',
+                boxShadow: '0 20px 50px rgba(0,0,0,0.5), 0 0 30px rgba(40,175,96,0.15)',
               }}
               animate={{ y: [0, -6, 0] }}
               transition={{ duration: 3, repeat: Infinity, ease: 'easeInOut' }}
@@ -350,8 +350,8 @@ export default function Hero() {
               <div className="px-3 pb-3">
                 <div className="text-xs font-semibold mb-2" style={{ color: '#EDEDEF' }}>OpenCode Go</div>
                 <div className="space-y-1.5">
-                  <div className="rounded-lg px-2.5 py-2" style={{ background: 'rgba(99,102,241,0.15)', border: '1px solid rgba(99,102,241,0.2)' }}>
-                    <p className="text-xs" style={{ color: '#c7d2fe' }}>帮我优化性能</p>
+                  <div className="rounded-lg px-2.5 py-2" style={{ background: 'rgba(40,175,96,0.15)', border: '1px solid rgba(40,175,96,0.2)' }}>
+                    <p className="text-xs" style={{ color: '#bbf7d0' }}>帮我优化性能</p>
                   </div>
                   <div className="rounded-lg px-2.5 py-2" style={{ background: 'rgba(255,255,255,0.12)', border: '1px solid rgba(255,255,255,0.13)' }}>
                     <p className="text-xs" style={{ color: '#9ca3af' }}>分析完成 ✓</p>

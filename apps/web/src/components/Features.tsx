@@ -3,7 +3,7 @@ import { Link2, Zap, ImageIcon, Eye, Clock, RefreshCw } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 
 const ICONS = [Link2, Zap, ImageIcon, Eye, Clock, RefreshCw]
-const COLORS = ['#818cf8', '#a78bfa', '#60a5fa', '#34d399', '#f472b6', '#fb923c']
+const COLORS = ['#4ade80', '#86efac', '#60a5fa', '#34d399', '#f472b6', '#fb923c']
 
 export default function Features() {
   const { t } = useTranslation()
@@ -23,7 +23,7 @@ export default function Features() {
           transform: 'translate(-50%, -50%)',
           width: '800px',
           height: '400px',
-          background: 'radial-gradient(ellipse, rgba(99,102,241,0.06) 0%, transparent 70%)',
+          background: 'radial-gradient(ellipse, rgba(40,175,96,0.06) 0%, transparent 70%)',
         }}
       />
 
@@ -39,9 +39,9 @@ export default function Features() {
           <div
             className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-medium mb-4"
             style={{
-              background: 'rgba(99,102,241,0.1)',
-              border: '1px solid rgba(99,102,241,0.2)',
-              color: '#818cf8',
+              background: 'rgba(40,175,96,0.1)',
+              border: '1px solid rgba(40,175,96,0.2)',
+              color: '#4ade80',
             }}
           >
             {t('features.title')}
@@ -59,7 +59,7 @@ export default function Features() {
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
           {items.map((item, i) => {
             const Icon = ICONS[i] ?? Zap
-            const color = COLORS[i] ?? '#818cf8'
+            const color = COLORS[i] ?? '#4ade80'
             const r = parseInt(color.slice(1, 3), 16)
             const g = parseInt(color.slice(3, 5), 16)
             const b = parseInt(color.slice(5, 7), 16)

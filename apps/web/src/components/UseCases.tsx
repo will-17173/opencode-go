@@ -3,8 +3,8 @@ import { Train, Armchair, Camera } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 
 const CONFIGS = [
-  { icon: Train, color: '#818cf8', bg: 'rgba(129,140,248,0.1)' },
-  { icon: Armchair, color: '#a78bfa', bg: 'rgba(167,139,250,0.1)' },
+  { icon: Train, color: '#4ade80', bg: 'rgba(74,222,128,0.1)' },
+  { icon: Armchair, color: '#86efac', bg: 'rgba(134,239,172,0.1)' },
   { icon: Camera, color: '#60a5fa', bg: 'rgba(96,165,250,0.1)' },
 ]
 

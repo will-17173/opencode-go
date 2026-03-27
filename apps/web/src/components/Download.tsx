@@ -38,7 +38,7 @@ export default function Download() {
           <div
             className="absolute inset-0 pointer-events-none"
             style={{
-              background: 'radial-gradient(ellipse 80% 60% at 50% 50%, rgba(99,102,241,0.08) 0%, transparent 70%)',
+              background: 'radial-gradient(ellipse 80% 60% at 50% 50%, rgba(40,175,96,0.08) 0%, transparent 70%)',
             }}
           />
 
@@ -97,8 +97,8 @@ export default function Download() {
                   color: '#EDEDEF',
                 }}
                 onMouseEnter={(e) => {
-                  e.currentTarget.style.background = 'rgba(99,102,241,0.1)'
-                  e.currentTarget.style.borderColor = 'rgba(99,102,241,0.4)'
+                  e.currentTarget.style.background = 'rgba(40,175,96,0.1)'
+                  e.currentTarget.style.borderColor = 'rgba(40,175,96,0.4)'
                   e.currentTarget.style.transform = 'translateY(-2px)'
                 }}
                 onMouseLeave={(e) => {
@@ -107,7 +107,7 @@ export default function Download() {
                   e.currentTarget.style.transform = 'translateY(0)'
                 }}
               >
-                <Icon className="w-5 h-5" style={{ color: '#818cf8' }} />
+                <Icon className="w-5 h-5" style={{ color: '#4ade80' }} />
                 <span className="text-sm font-medium">{label}</span>
                 <span className="text-xs" style={{ color: '#6b7280' }}>{sub}</span>
               </a>
@@ -125,9 +125,9 @@ export default function Download() {
               target="_blank"
               rel="noopener noreferrer"
               className="inline-flex items-center gap-1 transition-colors duration-200"
-              style={{ color: '#6366f1' }}
-              onMouseEnter={(e) => { e.currentTarget.style.color = '#818cf8' }}
-              onMouseLeave={(e) => { e.currentTarget.style.color = '#6366f1' }}
+              style={{ color: '#28AF60' }}
+              onMouseEnter={(e) => { e.currentTarget.style.color = '#4ade80' }}
+              onMouseLeave={(e) => { e.currentTarget.style.color = '#28AF60' }}
             >
               {t('download.github_releases')}
               <ExternalLink className="w-3 h-3" />
