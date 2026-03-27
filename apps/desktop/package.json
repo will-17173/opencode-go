@@ -1,7 +1,7 @@
 {
   "name": "opencode-go",
   "productName": "OpenCode Go",
-  "version": "1.0.20",
+  "version": "0.1.0",
   "description": "OpenCode Go - 基于 Electron + Vite + TypeScript 的桌面 AI 工作台",
   "main": "dist/main.js",
   "private": true,
