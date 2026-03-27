@@ -4,214 +4,97 @@
 
 [中文文档](./README_CN.md)
 
-OpenCode Go is a project that enables you to **remotely connect to and control OpenCode on your computer from your mobile phone**.
-
-It consists of two components:
-- **Desktop**: Built with Electron + Vite + TypeScript, runs the embedded OpenCode backend, manages working directories, and exposes LAN access
-- **Mobile**: Built with Flutter, allows you to browse working directories and continue AI conversations on your phone
-
-If you frequently use OpenCode on your computer for coding, research, or AI workflows, but want to continue sessions on your phone when away from your desk, OpenCode Go is designed for this scenario.
+OpenCode Go allows you to **remotely connect to and control OpenCode on your computer from your mobile phone**.
 
 ## Core Features
 
-### Implemented
+- **Remote Connection**: Connect to OpenCode on your computer from your phone
+- **Workspace Browsing**: View all working directories on your computer from your phone
+- **Conversation History**: Browse historical conversations and continue them anytime
+- **Real-time Response**: Support for AI streaming output, view replies in real-time
+- **Image Attachments**: Send images from your phone to AI for analysis
+- **Tool Steps**: View the execution status of AI tool calls
 
-- Mobile connects to Desktop via **IP + Port + 6-digit pairing code**
-- Desktop displays **online status, local IP, proxy port, and pairing code** for mobile connection
-- Mobile can browse **working directory list** from the computer
-- Mobile can view **conversation history** within directories or start new conversations
-- Supports **streaming AI responses (SSE)** for real-time output visibility
-- Supports **image attachment upload** to send to AI
-- View **tool steps and execution status** on mobile
-- Automatic reconnection prompt when connection is lost
+## Use Cases
 
-### Ideal Use Cases
-
-- Start OpenCode on your computer, continue asking questions on your phone when away
-- Browse AI conversations in a project directory while lying down, commuting, or between meetings
-- Send a phone screenshot or photo to AI for further analysis
-- Remotely verify tool calls, AI outputs, or historical context
-
-## How It Works
-
-OpenCode Go's core concept is not to "completely replace desktop UI with mobile", but to make the phone a **remote companion** for desktop OpenCode.
-
-The basic flow:
-
-1. Desktop starts the embedded OpenCode backend
-2. Electron main process starts an HTTP proxy server accessible via LAN
-3. Desktop UI displays local IP, dynamic proxy port, and 6-digit pairing code
-4. Mobile connects by entering `IP:Port` and pairing code
-5. Mobile accesses directory, conversation, chat, and streaming endpoints via HTTP + SSE
-6. Non-localhost requests require `X-Pairing-Code` header for remote access authentication
-
-> The current implementation is best described as **LAN / same-network remote connection**. This README does not claim it as a "complete remote control solution for any public network environment".
-
-## Repository Structure
-
-```text
-apps/
-├── desktop/   # Electron desktop app
-└── app/       # Flutter mobile app
-```
-
-### Desktop
-
-The desktop app is responsible for:
-- Starting the embedded OpenCode backend
-- Maintaining local data for model settings, working directories, skills, etc.
-- Providing proxy API for renderer process and mobile access
-- Displaying pairing code and network info as the mobile connection entry point
-
-### Mobile
-
-The mobile app is responsible for:
-- Connecting to the desktop proxy
-- Saving the last successful host address and pairing code
-- Browsing working directories and conversation history
-- Sending messages and receiving streaming responses
-- Uploading image attachments to continue conversations
+- Start OpenCode on your computer, continue asking questions on your phone when away from your desk
+- Browse AI conversations in a project while lying down, commuting, or between meetings
+- Send phone screenshots or photos to AI for further analysis
+- Remotely check tool calls, AI outputs, or historical context
 
 ## Quick Start
 
-### 1) Start Desktop
+### 1. Install Desktop App
 
-Run from the repository root:
+Download the installer for your system from the [Releases](https://github.com/your-repo/releases) page:
 
-```bash
-npm install
-npm start
-```
+- **macOS**: Download the `.dmg` file
+- **Windows**: Download the `.exe` installer
 
-After startup, confirm in the desktop UI:
-- Local IP
-- Proxy port
-- Pairing code
+Install and open the application.
 
-### 2) Start Mobile
+### 2. Connect Your Phone
 
-Navigate to the mobile directory and run the Flutter app:
+After opening the desktop app, you will see:
 
-```bash
-cd apps/app
-flutter pub get
-flutter run
-```
+- **Local IP Address**
+- **Port Number**
+- **6-digit Pairing Code**
 
-On the connection page, enter:
-- **IP address** of the computer
-- **Port** displayed by Desktop
-- **6-digit pairing code** displayed by Desktop
+Make sure your phone and computer are on the **same network**, or use [Tailscale](https://tailscale.com) for remote access (see FAQ below).
+
+### 3. Mobile Setup
+
+1. Open OpenCode Go app on your phone
+2. Enter the IP address and port shown on the desktop app
+3. Enter the 6-digit pairing code
+4. Tap Connect
 
 After successful connection, you can:
-- View existing working directories on desktop
-- Open conversation history within a directory
+
+- View the list of working directories on your computer
+- Open directories to view conversation history
 - Create new conversations and interact with AI
-- Add image attachments from your phone
+- Send image attachments
 
-## Development
+## FAQ
 
-### Common Commands (Root)
+### What if connection fails?
 
-```bash
-npm install
-npm start
-npm run lint
-```
+- Make sure your phone and computer are on the same network
+- Check if firewall is blocking the app's network access
+- Confirm that IP address, port, and pairing code are entered correctly
 
-### Desktop (apps/desktop)
+### Does the pairing code change?
 
-```bash
-npm start
-npm run lint
-npx tsc --noEmit
-```
+The pairing code stays the same unless you manually regenerate it in the desktop app settings.
 
-### Mobile (apps/app)
+### Which network environments are supported?
 
-```bash
-flutter pub get
-flutter analyze
-flutter test
-flutter run
-```
+OpenCode Go works on **local networks** and can also connect over the **internet** using [Tailscale](https://tailscale.com):
 
-## Build
+1. Install Tailscale on both your computer and phone
+2. Log in to the same Tailscale account on both devices
+3. Use the Tailscale IP address (starts with `100.`) shown on your computer to connect from your phone
 
-### Desktop Packaging
+Tailscale creates a secure virtual LAN, allowing you to connect from anywhere without exposing your computer to the public internet.
 
-```bash
-npm run make
-npm run make:mac
-npm run make:win
-npm run make:all
-```
+## Comparison with OpenClaw
 
-Build outputs are placed in the `out/` directory.
+| Feature | OpenCode Go | OpenClaw |
+|---------|-------------|----------|
+| **Positioning** | Remote OpenCode companion | Multi-channel personal AI assistant |
+| **Core Use** | Continue AI sessions on mobile | AI assistant on WhatsApp/Telegram/Slack/Discord/etc. |
+| **Setup** | Desktop app + mobile app | Gateway daemon + connect existing chat accounts |
+| **Channels** | Dedicated mobile app only | WhatsApp, Telegram, Slack, Discord, WeChat, etc. |
+| **AI Focus** | Coding, file operations, tool execution | General conversation, automation, skills |
+| **Workspace** | Working directories on computer | Workspaces with per-agent sessions |
+| **Remote Access** | Local network / Tailscale | Tailscale / SSH tunnels supported |
 
-### Release
+**OpenCode Go** is for users who want to **continue their OpenCode AI sessions** on mobile - viewing project context, sending images for analysis, and monitoring tool execution.
 
-```bash
-npm run publish
-npm run publish:mac
-```
+**OpenClaw** is for users who want a **personal AI assistant on their existing chat apps** - WhatsApp, Telegram, Slack, Discord, WeChat, and more. It focuses on multi-channel presence and general AI assistance.
 
-The release script is located at `scripts/publish.mjs`, which organizes installers and update manifest files.
+## Feedback & Support
 
-## Tech Stack
-
-| Layer | Technology |
-|---|---|
-| Desktop Framework | Electron 40 |
-| Desktop UI | React 19 + Tailwind CSS v3 + shadcn/ui |
-| Build Tool | Vite 5 |
-| Mobile | Flutter + Riverpod |
-| Network Communication | HTTP + SSE |
-| AI Backend | Embedded `opencode serve` binary |
-
-## Key Implementation Files
-
-To quickly understand how "remote mobile control of desktop OpenCode" is implemented, check these files:
-
-- `apps/desktop/src/components/layout/ConnectionPanel.tsx`
-  Desktop UI for IP, port, pairing code, and status display
-- `apps/desktop/src/main.ts`
-  Proxy server, `/api/health`, `/api/network/info`, pairing code validation, chat forwarding
-- `apps/app/lib/screens/connect_screen.dart`
-  Mobile connection and pairing verification flow
-- `apps/app/lib/providers/connection_provider.dart`
-  Connection state and pairing code persistence
-- `apps/app/lib/screens/home_screen.dart`
-  Working directory and conversation history browsing
-- `apps/app/lib/screens/chat_screen.dart`
-  Mobile chat, image attachments, message display
-- `apps/app/lib/services/api_client.dart`
-  `X-Pairing-Code` header injection, SSE streaming message handling
-
-## Roadmap
-
-### Completed Remote Capabilities
-
-- [x] Desktop embedded OpenCode with local proxy
-- [x] LAN connection and pairing code authentication
-- [x] Mobile directory and conversation history browsing
-- [x] Mobile new conversation and session continuation
-- [x] Streaming responses, tool step display
-- [x] Image attachment sending
-
-### Planned Enhancements
-
-- [ ] More complete "remote control" experience, not just remote chat
-- [ ] Smoother connection guidance and pairing flow
-- [ ] Richer mobile conversation management
-- [ ] Better mobile debugging/settings capabilities
-- [ ] Clearer installation and distribution methods
-- [ ] Explore connection solutions beyond LAN scenarios
-
-## Notes
-
-- Currently best suited for **same LAN / same network environment**
-- Remote capabilities mentioned in README are based on existing implementation
-- Mobile focus is on "continuing desktop OpenCode sessions", not replicating all desktop features
-
-If you want to build this project into a true "mobile control of desktop OpenCode" entry point, this repository provides a solid foundation: desktop handles running and exposing capabilities, mobile handles remote access and continuous interaction.
+If you encounter issues or have feature suggestions, feel free to submit them in [Issues](https://github.com/your-repo/issues).
