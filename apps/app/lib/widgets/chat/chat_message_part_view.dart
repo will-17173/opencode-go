@@ -34,7 +34,7 @@ class ChatMessagePartView extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         if (message.toolSteps.isNotEmpty)
-          ...message.toolSteps.map((step) => ChatToolStepTile(step: step)),
+          ChatToolStepTile(step: message.toolSteps.last),
         MarkdownBody(
           data: message.textContent,
           selectable: true,
