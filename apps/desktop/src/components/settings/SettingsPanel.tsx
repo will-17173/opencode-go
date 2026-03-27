@@ -1,8 +1,9 @@
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Eye, EyeOff, Save, CheckCircle2, Folder, Trash2, Upload, Globe, Package, RefreshCw, Sun, Moon, Monitor, Bug, Zap, Wrench, DollarSign, ExternalLink, Key, Shield } from 'lucide-react';
+import { Eye, EyeOff, Save, CheckCircle2, Folder, Trash2, Upload, Globe, Package, RefreshCw, Sun, Moon, Monitor, Bug, Zap, Wrench, DollarSign, ExternalLink, Key, Shield, Search, ChevronDown } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { cn } from '@/lib/utils';
 import type { useSettings, useProviders } from '@/hooks/useSettings';
 import { useSkills } from '@/hooks/useSkills';
@@ -48,6 +49,8 @@ export function SettingsPanel({
   const [regenerating, setRegenerating] = useState(false);
 
   const [activeTab, setActiveTab] = useState<SettingsTab>('general');
+  const [providerSearch, setProviderSearch] = useState('');
+  const [providerPopoverOpen, setProviderPopoverOpen] = useState(false);
   const { skills, reload: reloadSkills } = useSkills(directory);
   const { theme, setTheme } = useTheme();
   const { currentLanguage, setLanguage } = useLanguage();
@@ -76,6 +79,27 @@ export function SettingsPanel({
   const currentProviderModels = useMemo(() => {
     return getProviderModels(selectedProviderId);
   }, [getProviderModels, selectedProviderId]);
+
+  // 检查是否有可选择的模型（非禁用状态）
+  const hasSelectableModels = useMemo(() => {
+    return currentProviderModels.some(m => !m.disabled);
+  }, [currentProviderModels]);
+
+  // 过滤后的 provider 列表
+  const filteredProviderOptions = useMemo(() => {
+    const search = providerSearch.toLowerCase().trim();
+    if (!search) return providerOptions;
+    return providerOptions.filter(p =>
+      p.id.toLowerCase().includes(search) ||
+      p.name.toLowerCase().includes(search)
+    );
+  }, [providerOptions, providerSearch]);
+
+  // 当前选中的 provider 名称
+  const selectedProviderName = useMemo(() => {
+    const p = providerOptions.find(p => p.id === selectedProviderId);
+    return p?.name || selectedProviderId;
+  }, [providerOptions, selectedProviderId]);
 
   // 当前选中的模型信息
   const selectedModel = useMemo(() => {
@@ -305,22 +329,74 @@ export function SettingsPanel({
                   {/* Provider 选择 */}
                   <label className="block text-xs text-muted-foreground">
                     Provider
-                    <select
-                      className="mt-1 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
-                      value={selectedProviderId}
-                      onChange={(e) => {
-                        setSelectedProviderId(e.target.value);
-                        setSelectedModelId(''); // 切换 provider 时清空模型选择
-                      }}
-                      disabled={providersLoading}
-                    >
-                      <option value="">{t('settings.selectProvider')}</option>
-                      {providerOptions.map((p) => (
-                        <option key={p.id} value={p.id}>
-                          {p.name} {p.isConnected ? '✓' : `(${p.modelCount} 个模型)`}
-                        </option>
-                      ))}
-                    </select>
+                    <Popover open={providerPopoverOpen} onOpenChange={setProviderPopoverOpen}>
+                      <PopoverTrigger asChild>
+                        <button
+                          type="button"
+                          className="mt-1 flex w-full items-center justify-between gap-2 rounded-md border border-input bg-background px-3 py-2 text-sm text-left hover:bg-accent"
+                          disabled={providersLoading}
+                        >
+                          <span className={selectedProviderId ? 'text-foreground' : 'text-muted-foreground'}>
+                            {selectedProviderId ? (
+                              <>
+                                {selectedProviderName}
+                                {isConnected && <span className="ml-1 text-green-500">✓</span>}
+                              </>
+                            ) : (
+                              t('settings.selectProvider')
+                            )}
+                          </span>
+                          <ChevronDown className="h-4 w-4 shrink-0 opacity-50" />
+                        </button>
+                      </PopoverTrigger>
+                      <PopoverContent className="w-[--radix-popover-trigger-width] p-0" align="start">
+                        <div className="border-b border-border p-2">
+                          <div className="relative">
+                            <Search className="absolute left-2.5 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                            <Input
+                              value={providerSearch}
+                              onChange={(e) => setProviderSearch(e.target.value)}
+                              placeholder={t('settings.searchProvider', '搜索供应商...')}
+                              className="pl-8 text-sm"
+                            />
+                          </div>
+                        </div>
+                        <div className="max-h-60 overflow-y-auto p-1">
+                          {filteredProviderOptions.length > 0 ? (
+                            filteredProviderOptions.map((p) => (
+                              <button
+                                key={p.id}
+                                type="button"
+                                className={cn(
+                                  'flex w-full items-center justify-between gap-2 rounded-md px-3 py-2 text-sm text-left transition-colors',
+                                  selectedProviderId === p.id
+                                    ? 'bg-primary text-primary-foreground'
+                                    : 'hover:bg-accent'
+                                )}
+                                onClick={() => {
+                                  setSelectedProviderId(p.id);
+                                  setSelectedModelId('');
+                                  setProviderPopoverOpen(false);
+                                  setProviderSearch('');
+                                }}
+                              >
+                                <span className="truncate">{p.name}</span>
+                                <span className={cn(
+                                  'shrink-0 text-xs',
+                                  selectedProviderId === p.id ? 'text-primary-foreground/70' : 'text-muted-foreground'
+                                )}>
+                                  {p.isConnected ? '✓' : `${p.modelCount} 模型`}
+                                </span>
+                              </button>
+                            ))
+                          ) : (
+                            <div className="px-3 py-6 text-center text-sm text-muted-foreground">
+                              {t('settings.noProviderFound', '未找到匹配的供应商')}
+                            </div>
+                          )}
+                        </div>
+                      </PopoverContent>
+                    </Popover>
                   </label>
 
                   {/* Model 选择 */}
@@ -330,7 +406,7 @@ export function SettingsPanel({
                       <div className="mt-1 rounded-md border border-input bg-background px-3 py-2 text-sm text-muted-foreground">
                         {t('settings.loading')}
                       </div>
-                    ) : currentProviderModels.length > 0 ? (
+                    ) : currentProviderModels.length > 0 && hasSelectableModels ? (
                       <select
                         className="mt-1 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
                         value={selectedModelId}
@@ -347,7 +423,7 @@ export function SettingsPanel({
                       <Input
                         value={selectedModelId}
                         onChange={(e) => setSelectedModelId(e.target.value)}
-                        placeholder="输入模型 ID，如 gpt-4o"
+                        placeholder={currentProviderModels.length > 0 ? '连接后可选模型，或手动输入模型 ID' : '输入模型 ID，如 gpt-4o'}
                         className="mt-1 font-mono text-xs"
                       />
                     )}

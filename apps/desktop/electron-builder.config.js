@@ -1,15 +1,36 @@
 const fs = require('fs');
 const path = require('path');
 
+// monorepo 根目录的 node_modules（二进制包安装在这里）
+const monorepoNodeModules = path.resolve(__dirname, '../../node_modules');
+// apps/desktop 的 node_modules（开发时可能存在）
+const localNodeModules = path.resolve(__dirname, 'node_modules');
+
 const allBinaries = [
-  { from: 'node_modules/opencode-darwin-arm64/bin/opencode', to: 'opencode-darwin-arm64/bin/opencode' },
-  { from: 'node_modules/opencode-darwin-x64/bin/opencode', to: 'opencode-darwin-x64/bin/opencode' },
-  { from: 'node_modules/opencode-linux-x64/bin/opencode', to: 'opencode-linux-x64/bin/opencode' },
-  { from: 'node_modules/opencode-linux-arm64/bin/opencode', to: 'opencode-linux-arm64/bin/opencode' },
-  { from: 'node_modules/opencode-windows-x64/bin/opencode.exe', to: 'opencode-windows-x64/bin/opencode.exe' },
+  { pkg: 'opencode-darwin-arm64', file: 'bin/opencode', to: 'opencode-darwin-arm64/bin/opencode' },
+  { pkg: 'opencode-darwin-x64', file: 'bin/opencode', to: 'opencode-darwin-x64/bin/opencode' },
+  { pkg: 'opencode-linux-x64', file: 'bin/opencode', to: 'opencode-linux-x64/bin/opencode' },
+  { pkg: 'opencode-linux-arm64', file: 'bin/opencode', to: 'opencode-linux-arm64/bin/opencode' },
+  { pkg: 'opencode-windows-x64', file: 'bin/opencode.exe', to: 'opencode-windows-x64/bin/opencode.exe' },
 ];
 
-const extraResources = allBinaries.filter((b) => fs.existsSync(path.join(__dirname, b.from)));
+const extraResources = allBinaries
+  .map((b) => {
+    // 优先查找 monorepo 根目录的 node_modules
+    const monorepoPath = path.join(monorepoNodeModules, b.pkg, b.file);
+    const localPath = path.join(localNodeModules, b.pkg, b.file);
+
+    if (fs.existsSync(monorepoPath)) {
+      return { from: monorepoPath, to: b.to };
+    }
+    if (fs.existsSync(localPath)) {
+      return { from: localPath, to: b.to };
+    }
+    return null;
+  })
+  .filter(Boolean);
+
+console.log('[electron-builder] extraResources:', extraResources);
 
 module.exports = {
   appId: 'ai.opencode.go',
