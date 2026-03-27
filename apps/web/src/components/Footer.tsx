@@ -1,8 +1,7 @@
 import { Github } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 
-// TODO: 替换为实际 GitHub 仓库地址
-const GITHUB_URL = 'https://github.com/YOUR_ORG/opencode-go'
+const GITHUB_URL = 'https://github.com/will-17173/opencode-go'
 
 export default function Footer() {
   const { t, i18n } = useTranslation()

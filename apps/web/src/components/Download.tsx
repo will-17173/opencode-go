@@ -2,8 +2,7 @@ import { motion } from 'framer-motion'
 import { Laptop, Monitor, Smartphone, ExternalLink } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 
-// TODO: 替换为实际 GitHub 仓库地址
-const GITHUB_RELEASES = 'https://github.com/YOUR_ORG/opencode-go/releases'
+const GITHUB_RELEASES = 'https://github.com/will-17173/opencode-go/releases'
 
 export default function Download() {
   const { t } = useTranslation()
