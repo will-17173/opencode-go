@@ -2,9 +2,12 @@ const fs = require('fs');
 const path = require('path');
 
 // monorepo 根目录的 node_modules（二进制包安装在这里）
-const monorepoNodeModules = path.resolve(__dirname, '../../node_modules');
+const monorepoRoot = path.resolve(__dirname, '../..');
+const monorepoNodeModules = path.join(monorepoRoot, 'node_modules');
 // apps/desktop 的 node_modules（开发时可能存在）
 const localNodeModules = path.resolve(__dirname, 'node_modules');
+// 根目录的 build 目录（包含图标等资源）
+const buildResourcesDir = path.join(monorepoRoot, 'build');
 
 const allBinaries = [
   { pkg: 'opencode-darwin-arm64', file: 'bin/opencode', to: 'opencode-darwin-arm64/bin/opencode' },
@@ -44,7 +47,7 @@ module.exports = {
   cscKeyPassword: process.env.CSC_KEY_PASSWORD,
 
   directories: {
-    buildResources: 'build',
+    buildResources: buildResourcesDir,
     output: 'out',
   },
   files: [
@@ -76,13 +79,15 @@ module.exports = {
     category: 'public.app-category.productivity',
     hardenedRuntime: true,
     gatekeeperAssess: false,
-    entitlements: 'build/entitlements.mac.inherit.plist',
-    entitlementsInherit: 'build/entitlements.mac.inherit.plist',
+    entitlements: path.join(buildResourcesDir, 'entitlements.mac.inherit.plist'),
+    entitlementsInherit: path.join(buildResourcesDir, 'entitlements.mac.inherit.plist'),
     identity: null,
+    icon: path.join(buildResourcesDir, 'icon.icns'),
   },
 
   win: {
     target: [{ target: 'nsis', arch: ['x64'] }],
+    icon: path.join(buildResourcesDir, 'icon.ico'),
     signtoolOptions: {
       signingHashAlgorithms: ['sha256'],
       rfc3161TimeStampServer: 'http://timestamp.digicert.com',
