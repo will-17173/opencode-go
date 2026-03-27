@@ -1,41 +1,34 @@
+import { useState } from 'react';
 import { Settings, X } from 'lucide-react';
 import { ConnectionPanel } from '@/components/layout/ConnectionPanel';
 import { SettingsPanel } from '@/components/settings/SettingsPanel';
+import { DebugPanel } from '@/components/debug/DebugPanel';
 import { cn } from '@/lib/utils';
 import appIcon from '@/assets/icon.png';
 import type { useSettings } from '@/hooks/useSettings';
 import type { Project } from '@/hooks/useProjects';
-import type { UpdateState } from '@/hooks/useUpdater';
 
 interface MainAreaProps {
   showSettings: boolean;
   onShowSettings: (show: boolean) => void;
   settings: ReturnType<typeof useSettings>;
-  showDebugTrigger: boolean;
-  onShowDebugTriggerChange: (show: boolean) => void;
-  onRequestShowUpdateDialog?: () => void;
-  updateState: UpdateState;
   projects: Project[];
   onAddProject: () => void;
   onRemoveProject: (id: string) => void;
   onRenameProject: (id: string, name: string) => void;
-  hasUpdate?: boolean;
 }
 
 export function MainArea({
   showSettings,
   onShowSettings,
   settings,
-  showDebugTrigger,
-  onShowDebugTriggerChange,
-  onRequestShowUpdateDialog,
-  updateState,
   projects,
   onAddProject,
   onRemoveProject,
   onRenameProject,
-  hasUpdate = false,
 }: MainAreaProps) {
+  const [showDebug, setShowDebug] = useState(false);
+
   return (
     <div className="flex h-full w-full flex-col overflow-hidden bg-background">
       {/* Header - 极简导航 */}
@@ -53,15 +46,12 @@ export function MainArea({
         <button
           onClick={() => onShowSettings(!showSettings)}
           className={cn(
-            'relative flex h-9 w-9 items-center justify-center rounded-full transition-colors',
+            'flex h-9 w-9 items-center justify-center rounded-full transition-colors',
             'text-muted-foreground hover:bg-secondary hover:text-foreground'
           )}
           title={showSettings ? '关闭设置' : '设置'}
         >
           {showSettings ? <X className="h-5 w-5" /> : <Settings className="h-5 w-5" />}
-          {!showSettings && hasUpdate && (
-            <span className="absolute right-0 top-0 h-2.5 w-2.5 rounded-full bg-primary" />
-          )}
         </button>
       </header>
 
@@ -70,10 +60,7 @@ export function MainArea({
         {showSettings ? (
           <SettingsPanel
             settings={settings}
-            showDebugTrigger={showDebugTrigger}
-            onShowDebugTriggerChange={onShowDebugTriggerChange}
-            onRequestShowUpdateDialog={onRequestShowUpdateDialog}
-            updateState={updateState}
+            onOpenDebugPanel={() => setShowDebug(true)}
           />
         ) : (
           <ConnectionPanel
@@ -84,6 +71,14 @@ export function MainArea({
           />
         )}
       </main>
+
+      {/* Debug Panel */}
+      {showDebug && (
+        <DebugPanel
+          proxyPort={settings.proxyPort}
+          onClose={() => setShowDebug(false)}
+        />
+      )}
     </div>
   );
 }

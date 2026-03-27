@@ -638,10 +638,17 @@ async function waitForOpencode(retries = 20, delayMs = 500): Promise<void> {
   throw new Error('opencode server did not become healthy in time');
 }
 
+// 判断是否为官方供应商（不需要手动配置 baseURL）
+function isOfficialProvider(providerType: ProviderType): boolean {
+  return providerType === 'openai' || providerType === 'anthropic';
+}
+
 // ── 将 AI SDK 设置同步到 opencode（auth.set + config.update）───────────────────
 async function applyAiSdkSettingsToOpencode(settings: AppSettings) {
   const effective = getEffectiveProviderConfig(settings);
-  if (!effective || !effective.apiKey || !effective.baseURL) return;
+  // 官方供应商不要求 baseURL，其他供应商必须填写
+  if (!effective || !effective.apiKey) return;
+  if (!isOfficialProvider(effective.providerType) && !effective.baseURL) return;
   // 直接使用映射后的 providerID，支持 openai-compatible / anthropic-compatible
   const runtimeProviderID = effective.providerID;
   const runtimeModel = `${runtimeProviderID}/${effective.model}`;
@@ -661,9 +668,12 @@ async function applyAiSdkSettingsToOpencode(settings: AppSettings) {
   }
 
   const providerOptions: Record<string, unknown> = {
-    baseURL: effective.baseURL,
     timeout,
   };
+  // 官方供应商可以不传 baseURL，使用默认值
+  if (effective.baseURL) {
+    providerOptions.baseURL = effective.baseURL;
+  }
   // compatible 类型需要在 options 中传入 apiKey 和 name
   if (runtimeProviderID === 'openai-compatible' || runtimeProviderID === 'anthropic-compatible') {
     providerOptions.apiKey = effective.apiKey;
@@ -706,9 +716,12 @@ async function ensureDirectoryRuntimeModel(directory: string, effective: Effecti
   const client = getClient();
 
   const providerOptions: Record<string, unknown> = {
-    baseURL: effective.baseURL,
     timeout,
   };
+  // 官方供应商可以不传 baseURL，使用默认值
+  if (effective.baseURL) {
+    providerOptions.baseURL = effective.baseURL;
+  }
   if (runtimeProviderID === 'openai-compatible' || runtimeProviderID === 'anthropic-compatible') {
     providerOptions.apiKey = effective.apiKey;
     providerOptions.name = runtimeProviderID === 'openai-compatible' ? 'OpenAICompatible' : 'AnthropicCompatible';

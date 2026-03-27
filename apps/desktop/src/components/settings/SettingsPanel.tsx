@@ -1,23 +1,18 @@
 import React, { useState, useEffect } from 'react';
-import { Eye, EyeOff, Save, CheckCircle2, Download, Folder, Trash2, Upload, Globe, Package, RefreshCw, Sun, Moon, Monitor } from 'lucide-react';
+import { Eye, EyeOff, Save, CheckCircle2, Folder, Trash2, Upload, Globe, Package, RefreshCw, Sun, Moon, Monitor, Bug } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Switch } from '@/components/ui/switch';
 import { cn } from '@/lib/utils';
 import type { useSettings } from '@/hooks/useSettings';
 import { useSkills } from '@/hooks/useSkills';
 import type { Skill } from '@/types/skill';
 import { useTheme, type Theme } from '@/hooks/useTheme';
-import type { UpdateState } from '@/hooks/useUpdater';
 import { AVAILABLE_MODELS, PROVIDER_OPTIONS, isProviderReady, type ProviderType } from '@/types/model';
 
 interface SettingsPanelProps {
   settings: ReturnType<typeof useSettings>;
   directory?: string;
-  showDebugTrigger: boolean;
-  onShowDebugTriggerChange: (show: boolean) => void;
-  onRequestShowUpdateDialog?: () => void;
-  updateState: UpdateState;
+  onOpenDebugPanel?: () => void;
 }
 
 type SettingsTab = 'general' | 'skills';
@@ -25,10 +20,7 @@ type SettingsTab = 'general' | 'skills';
 export function SettingsPanel({
   settings: { settings, loading, error, saveModelSettings, regeneratePairingCode, proxyPort },
   directory,
-  showDebugTrigger,
-  onShowDebugTriggerChange,
-  onRequestShowUpdateDialog,
-  updateState,
+  onOpenDebugPanel,
 }: SettingsPanelProps) {
   const [providerType, setProviderType] = useState<ProviderType>('openai');
   const [model, setModel] = useState('');
@@ -38,16 +30,9 @@ export function SettingsPanel({
   const [saved, setSaved] = useState(false);
   const [regenerating, setRegenerating] = useState(false);
 
-  const [appVersion, setAppVersion] = useState('');
   const [activeTab, setActiveTab] = useState<SettingsTab>('general');
   const { skills, reload: reloadSkills } = useSkills(directory);
   const { theme, setTheme } = useTheme();
-
-  useEffect(() => {
-    window.electronAPI.getAppVersion().then(setAppVersion).catch((e) => {
-      console.warn('[settings] failed to load app version', e);
-    });
-  }, []);
 
   useEffect(() => {
     setProviderType(settings.activeProviderConfig.providerType);
@@ -75,6 +60,7 @@ export function SettingsPanel({
     }
   };
 
+  // Provider ID 用于模型建议列表
   const providerIDForSuggestion =
     providerType === 'anthropic' || providerType === 'anthropic-compatible'
       ? 'anthropic'
@@ -83,6 +69,10 @@ export function SettingsPanel({
         : 'openai';
   const providerModels = AVAILABLE_MODELS.filter((m) => m.providerID === providerIDForSuggestion);
   const providerReady = isProviderReady(providerType);
+
+  // 官方供应商不需要填写 baseURL
+  const isOfficialProvider = providerType === 'openai' || providerType === 'anthropic';
+  const canSave = inputKey.trim() && model.trim() && (isOfficialProvider || baseURL.trim()) && loading === false && providerReady;
 
   const handleImportSkill = async (scope: 'global' | 'project') => {
     const input = document.createElement('input');
@@ -140,7 +130,7 @@ export function SettingsPanel({
           <div className="mx-auto max-w-xl space-y-8">
             {/* AI SDK Model */}
             <section>
-              <h2 className="mb-4 text-sm font-medium text-muted-foreground">大模型（AI SDK）</h2>
+              <h2 className="mb-4 text-sm font-medium text-muted-foreground">供应商</h2>
               <div className="rounded-xl bg-card p-5">
                 {settings.hasApiKey ? (
                   <div className="mb-4 space-y-2 rounded-md border border-border bg-background/60 p-3 text-xs">
@@ -160,7 +150,7 @@ export function SettingsPanel({
                       <div className="flex items-center justify-between gap-3">
                         <span>Base URL</span>
                         <span className="max-w-[60%] truncate font-mono text-foreground">
-                          {settings.activeProviderConfig.baseURL || '-'}
+                          {settings.activeProviderConfig.baseURL || (settings.activeProviderConfig.providerType === 'openai' || settings.activeProviderConfig.providerType === 'anthropic' ? '默认' : '-')}
                         </span>
                       </div>
                       <div className="flex items-center justify-between gap-3">
@@ -211,11 +201,11 @@ export function SettingsPanel({
                   </div>
 
                   <label className="block text-xs text-muted-foreground">
-                    Base URL
+                    Base URL{isOfficialProvider && <span className="ml-1 text-muted-foreground/60">(可选)</span>}
                     <Input
                       value={baseURL}
                       onChange={(e) => setBaseURL(e.target.value)}
-                      placeholder="https://api.openai.com/v1"
+                      placeholder={isOfficialProvider ? '留空使用官方接口' : 'https://api.example.com/v1'}
                       className="mt-1 font-mono text-xs"
                     />
                   </label>
@@ -227,7 +217,7 @@ export function SettingsPanel({
                       value={inputKey}
                       onChange={(e) => setInputKey(e.target.value)}
                       className="pr-10 font-mono text-sm"
-                      onKeyDown={(e) => e.key === 'Enter' && inputKey.trim() && model.trim() && baseURL.trim() && providerReady && handleSave()}
+                      onKeyDown={(e) => e.key === 'Enter' && canSave && handleSave()}
                     />
                     <button
                       type="button"
@@ -240,7 +230,7 @@ export function SettingsPanel({
                   </div>
                   <Button
                     onClick={handleSave}
-                    disabled={!inputKey.trim() || !model.trim() || !baseURL.trim() || loading || !providerReady}
+                    disabled={!canSave}
                     size="sm"
                     className={cn('gap-1.5', saved && 'bg-primary')}
                   >
@@ -309,53 +299,22 @@ export function SettingsPanel({
               </div>
             </section>
 
-            {/* Update */}
-            <section>
-              <h2 className="mb-4 text-sm font-medium text-muted-foreground">更新</h2>
-              <div className="flex items-center justify-between rounded-xl bg-card p-5">
-                <div>
-                  <p className="text-sm">
-                    {updateState.status === 'available'
-                      ? `发现新版本 v${updateState.version}`
-                      : appVersion
-                        ? `当前 v${appVersion}`
-                        : '检查更新'}
-                  </p>
-                </div>
-                <Button
-                  variant={updateState.status === 'available' ? 'default' : 'outline'}
-                  size="sm"
-                  onClick={() => onRequestShowUpdateDialog?.()}
-                  disabled={updateState.status === 'checking'}
-                  className="gap-1.5"
-                >
-                  {updateState.status === 'checking' ? (
-                    <RefreshCw className="h-4 w-4 animate-spin" />
-                  ) : updateState.status === 'available' ? (
-                    <Download className="h-4 w-4" />
-                  ) : (
-                    <RefreshCw className="h-4 w-4" />
-                  )}
-                  {updateState.status === 'checking'
-                    ? '检查中...'
-                    : updateState.status === 'available'
-                      ? '更新'
-                      : '检查'}
-                </Button>
-              </div>
-            </section>
-
             {/* Debug */}
             <section>
               <div className="flex items-center justify-between rounded-xl bg-card p-5">
                 <div>
                   <p className="text-sm font-medium">调试工具</p>
-                  <p className="text-xs text-muted-foreground">显示 Debug 面板</p>
+                  <p className="text-xs text-muted-foreground">查看服务状态和运行日志</p>
                 </div>
-                <Switch
-                  checked={showDebugTrigger}
-                  onCheckedChange={onShowDebugTriggerChange}
-                />
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={onOpenDebugPanel}
+                  className="gap-1.5"
+                >
+                  <Bug className="h-4 w-4" />
+                  打开
+                </Button>
               </div>
             </section>
           </div>
