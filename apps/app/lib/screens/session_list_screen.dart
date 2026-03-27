@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:opencode_go/l10n/app_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
 
@@ -27,6 +28,7 @@ class _SessionListScreenState extends ConsumerState<SessionListScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final directory = widget.directory;
     final dirName = directory.split('/').last;
     final sessionsAsync = ref.watch(sessionsProvider(directory));
@@ -47,7 +49,7 @@ class _SessionListScreenState extends ConsumerState<SessionListScreen> {
       ),
       floatingActionButton: FloatingActionButton.extended(
         icon: const Icon(Icons.add),
-        label: const Text('新对话'),
+        label: Text(l10n.sessionNewChat),
         onPressed: () {
           ref.read(currentSessionIdProvider.notifier).state = null;
           ref.read(chatProvider.notifier).clear();
@@ -58,9 +60,9 @@ class _SessionListScreenState extends ConsumerState<SessionListScreen> {
         },
       ),
       child: sessionsAsync.when(
-        loading: () => const AppLoadingState(message: '正在加载该目录下的历史会话'),
+        loading: () => AppLoadingState(message: l10n.sessionLoading),
         error: (e, _) => AppErrorState(
-          message: '无法加载历史会话：$e',
+          message: '${l10n.sessionErrorPrefix}$e',
           onRetry: () {
             ref.invalidate(pinnedSessionIdsProvider(directory));
             ref.invalidate(sessionsProvider(directory));
@@ -68,10 +70,10 @@ class _SessionListScreenState extends ConsumerState<SessionListScreen> {
         ),
         data: (sessions) {
           if (sessions.isEmpty) {
-            return const AppEmptyState(
+            return AppEmptyState(
               icon: Icons.history_outlined,
-              title: '暂无历史会话',
-              message: '在这个工作区下还没有历史对话，点击右下角即可开始新的会话。',
+              title: l10n.sessionEmptyTitle,
+              message: l10n.sessionEmptyMessage,
             );
           }
 
@@ -85,7 +87,8 @@ class _SessionListScreenState extends ConsumerState<SessionListScreen> {
                     directory: directory,
                     isPinned: pinnedIds.contains(session.id),
                     isBusy: _busySessionId == session.id,
-                    onDelete: () => _handleDeleteSession(session),
+                    l10n: l10n,
+                    onDelete: () => _handleDeleteSession(session, l10n),
                     onTogglePin: () => _handleTogglePin(session.id),
                   ),
                 )
@@ -114,7 +117,7 @@ class _SessionListScreenState extends ConsumerState<SessionListScreen> {
     });
   }
 
-  Future<void> _handleDeleteSession(Session session) async {
+  Future<void> _handleDeleteSession(Session session, AppLocalizations l10n) async {
     if (_busySessionId != null) return;
 
     setState(() {
@@ -125,7 +128,7 @@ class _SessionListScreenState extends ConsumerState<SessionListScreen> {
     final client = ref.read(apiClientProvider).valueOrNull;
 
     if (client == null) {
-      messenger.showSnackBar(const SnackBar(content: Text('当前未连接，无法删除会话')));
+      messenger.showSnackBar(SnackBar(content: Text(l10n.sessionDeleteNotConnected)));
       setState(() {
         _busySessionId = null;
       });
@@ -151,9 +154,9 @@ class _SessionListScreenState extends ConsumerState<SessionListScreen> {
       ref.read(pinnedSessionsRefreshProvider.notifier).state++;
       ref.invalidate(sessionsProvider(widget.directory));
       ref.invalidate(directoriesProvider);
-      messenger.showSnackBar(const SnackBar(content: Text('会话已删除')));
+      messenger.showSnackBar(SnackBar(content: Text(l10n.sessionDeleted)));
     } else {
-      messenger.showSnackBar(const SnackBar(content: Text('删除会话失败')));
+      messenger.showSnackBar(SnackBar(content: Text(l10n.sessionDeleteFailed)));
     }
 
     setState(() {
@@ -167,6 +170,7 @@ class _SessionTile extends ConsumerWidget {
   final String directory;
   final bool isPinned;
   final bool isBusy;
+  final AppLocalizations l10n;
   final Future<void> Function() onDelete;
   final Future<void> Function() onTogglePin;
 
@@ -175,6 +179,7 @@ class _SessionTile extends ConsumerWidget {
     required this.directory,
     required this.isPinned,
     required this.isBusy,
+    required this.l10n,
     required this.onDelete,
     required this.onTogglePin,
   });
@@ -197,7 +202,7 @@ class _SessionTile extends ConsumerWidget {
             backgroundColor: colorScheme.secondaryContainer,
             foregroundColor: colorScheme.onSecondaryContainer,
             icon: isPinned ? Icons.push_pin : Icons.push_pin_outlined,
-            label: isPinned ? '取消置顶' : '置顶',
+            label: isPinned ? l10n.sessionUnpin : l10n.sessionPin,
             borderRadius: BorderRadius.zero,
           ),
           SlidableAction(
@@ -205,14 +210,14 @@ class _SessionTile extends ConsumerWidget {
             backgroundColor: colorScheme.error,
             foregroundColor: colorScheme.onError,
             icon: Icons.delete_outline,
-            label: '删除',
+            label: l10n.sessionDelete,
             borderRadius: BorderRadius.zero,
           ),
         ],
       ),
       child: SessionListTile(
         session: session,
-        subtitle: session.updatedAt != null ? _formatDate(session.updatedAt!) : '未记录更新时间',
+        subtitle: session.updatedAt != null ? _formatDate(session.updatedAt!, l10n) : l10n.sessionNoUpdateTime,
         trailing: isBusy
             ? const SizedBox(
                 width: 20,
@@ -240,13 +245,13 @@ class _SessionTile extends ConsumerWidget {
     );
   }
 
-  String _formatDate(DateTime dt) {
+  String _formatDate(DateTime dt, AppLocalizations l10n) {
     final now = DateTime.now();
     final diff = now.difference(dt);
     if (diff.inDays == 0) {
-      return '今天 ${dt.hour.toString().padLeft(2, '0')}:${dt.minute.toString().padLeft(2, '0')}';
+      return '${l10n.sessionToday}${dt.hour.toString().padLeft(2, '0')}:${dt.minute.toString().padLeft(2, '0')}';
     }
-    if (diff.inDays == 1) return '昨天';
+    if (diff.inDays == 1) return l10n.sessionYesterday;
     return '${dt.month}/${dt.day}';
   }
 }

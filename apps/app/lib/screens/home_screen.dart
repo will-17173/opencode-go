@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:opencode_go/l10n/app_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../providers/connection_provider.dart';
@@ -22,6 +23,7 @@ class HomeScreen extends ConsumerStatefulWidget {
 class _HomeScreenState extends ConsumerState<HomeScreen> {
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final directoriesAsync = ref.watch(directoriesProvider);
 
     return AppScaffold(
@@ -46,22 +48,22 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const HomeHeader(
-            title: '工作区',
-            subtitle: '选择桌面端已经开始使用的目录，查看历史会话或继续新的对话。',
+          HomeHeader(
+            title: l10n.homeTitle,
+            subtitle: l10n.homeSubtitle,
           ),
           directoriesAsync.when(
-            loading: () => const AppLoadingState(message: '正在同步桌面端的工作区列表'),
+            loading: () => AppLoadingState(message: l10n.homeLoading),
             error: (e, _) => AppErrorState(
-              message: '目录加载失败：$e',
+              message: '${l10n.homeErrorPrefix}$e',
               onRetry: () => ref.invalidate(directoriesProvider),
             ),
             data: (dirs) {
               if (dirs.isEmpty) {
-                return const AppEmptyState(
+                return AppEmptyState(
                   icon: Icons.folder_off_outlined,
-                  title: '暂无工作区',
-                  message: '请先在 PC 端开始一个对话，随后这里会显示可继续的工作区。',
+                  title: l10n.homeEmptyTitle,
+                  message: l10n.homeEmptyMessage,
                 );
               }
 

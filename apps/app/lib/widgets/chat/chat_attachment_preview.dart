@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
+import 'package:opencode_go/l10n/app_localizations.dart';
 
 import '../../theme/app_spacing.dart';
 
@@ -18,6 +19,7 @@ class ChatAttachmentPreview extends StatelessWidget {
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
     final textTheme = Theme.of(context).textTheme;
+    final l10n = AppLocalizations.of(context)!;
 
     return Container(
       margin: const EdgeInsets.only(bottom: AppSpacing.sm),
@@ -33,7 +35,7 @@ class ChatAttachmentPreview extends StatelessWidget {
           Padding(
             padding: const EdgeInsets.fromLTRB(8, 4, 8, 8),
             child: Text(
-              '待发送附件',
+              l10n.chatPendingAttachments,
               style: textTheme.labelLarge?.copyWith(
                 color: colorScheme.onSurfaceVariant,
               ),

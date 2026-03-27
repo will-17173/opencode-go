@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:opencode_go/l10n/app_localizations.dart';
 
 import '../../models/message.dart';
 
@@ -11,6 +12,7 @@ class ChatToolStepTile extends StatelessWidget {
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
     final textTheme = Theme.of(context).textTheme;
+    final l10n = AppLocalizations.of(context)!;
     final isRunning = step.status == 'running';
     final isError = step.status == 'error';
 
@@ -27,10 +29,10 @@ class ChatToolStepTile extends StatelessWidget {
             : colorScheme.onSurfaceVariant;
 
     final label = isError
-        ? '执行失败'
+        ? l10n.chatToolFailed
         : isRunning
-            ? '执行中'
-            : '已完成';
+            ? l10n.chatToolExecuting
+            : l10n.chatToolCompleted;
 
     return Container(
       width: double.infinity,

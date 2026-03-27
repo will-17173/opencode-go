@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:opencode_go/l10n/app_localizations.dart';
 
 class ChatInputBar extends StatelessWidget {
   final TextEditingController controller;
@@ -19,6 +20,7 @@ class ChatInputBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
+    final l10n = AppLocalizations.of(context)!;
 
     return Material(
       color: colorScheme.surfaceContainerLow,
@@ -31,7 +33,7 @@ class ChatInputBar extends StatelessWidget {
             IconButton.filledTonal(
               icon: const Icon(Icons.image_outlined),
               onPressed: isLoading ? null : onPickImage,
-              tooltip: '添加图片',
+              tooltip: l10n.chatAttachImage,
             ),
             const SizedBox(width: 8),
             Expanded(
@@ -41,7 +43,7 @@ class ChatInputBar extends StatelessWidget {
                 minLines: 1,
                 textInputAction: TextInputAction.newline,
                 decoration: InputDecoration(
-                  hintText: '发送消息...',
+                  hintText: l10n.chatPlaceholder,
                   filled: true,
                   fillColor: colorScheme.surface,
                 ),

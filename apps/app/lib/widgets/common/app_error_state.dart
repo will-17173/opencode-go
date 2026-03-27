@@ -1,21 +1,23 @@
 import 'package:flutter/material.dart';
+import 'package:opencode_go/l10n/app_localizations.dart';
 
 import '../../theme/app_spacing.dart';
 
 class AppErrorState extends StatelessWidget {
-  final String title;
+  final String? title;
   final String message;
   final VoidCallback? onRetry;
 
   const AppErrorState({
     super.key,
-    this.title = '加载失败',
+    this.title,
     required this.message,
     this.onRetry,
   });
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final colorScheme = Theme.of(context).colorScheme;
     final textTheme = Theme.of(context).textTheme;
 
@@ -39,7 +41,7 @@ class AppErrorState extends StatelessWidget {
                 ),
                 const SizedBox(height: AppSpacing.md),
                 Text(
-                  title,
+                  title ?? l10n.errorLoadFailed,
                   style: textTheme.titleMedium?.copyWith(
                     color: colorScheme.onErrorContainer,
                   ),
@@ -56,7 +58,7 @@ class AppErrorState extends StatelessWidget {
                   const SizedBox(height: AppSpacing.lg),
                   FilledButton.tonal(
                     onPressed: onRetry,
-                    child: const Text('重试'),
+                    child: Text(l10n.errorRetry),
                   ),
                 ],
               ],

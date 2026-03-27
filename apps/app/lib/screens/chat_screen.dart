@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
+import 'package:opencode_go/l10n/app_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:flutter_image_compress/flutter_image_compress.dart';
@@ -120,7 +121,8 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
 
     ref.listen(chatProvider, (_, __) => _scrollToBottom());
 
-    final dirName = _directory?.split('/').last ?? '对话';
+    final l10n = AppLocalizations.of(context)!;
+    final dirName = _directory?.split('/').last ?? l10n.chatDefaultTitle;
 
     return Scaffold(
       appBar: ChatAppBar(

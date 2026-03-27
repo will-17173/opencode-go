@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:opencode_go/l10n/app_localizations.dart';
 
 class ChatAppBar extends StatelessWidget implements PreferredSizeWidget {
   final String title;
@@ -14,6 +15,7 @@ class ChatAppBar extends StatelessWidget implements PreferredSizeWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return AppBar(
       title: Text(title, overflow: TextOverflow.ellipsis),
       actions: [
@@ -21,7 +23,7 @@ class ChatAppBar extends StatelessWidget implements PreferredSizeWidget {
           IconButton(
             icon: const Icon(Icons.stop_circle_outlined),
             onPressed: onStop,
-            tooltip: '停止',
+            tooltip: l10n.chatStop,
           ),
       ],
     );
