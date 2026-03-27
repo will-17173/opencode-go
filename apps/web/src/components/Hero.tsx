@@ -13,7 +13,6 @@ export default function Hero() {
     <section
       id="hero"
       className="relative overflow-hidden"
-      style={{ height: '100vh', minHeight: '700px', display: 'flex', alignItems: 'center' }}
     >
       {/* 背景 */}
       <div className="absolute inset-0 pointer-events-none">
@@ -59,8 +58,8 @@ export default function Hero() {
         />
       </div>
 
-      <div className="relative z-10 w-full max-w-7xl mx-auto px-6 lg:px-12">
-        <div className="grid lg:grid-cols-2 gap-10 lg:gap-16 items-center">
+      <div className="relative z-10 w-full max-w-7xl mx-auto px-6 lg:px-12 py-24 lg:py-32">
+        <div className="grid lg:grid-cols-2 gap-10 lg:gap-16 items-start">
 
           {/* 左侧：文案区 */}
           <div>
