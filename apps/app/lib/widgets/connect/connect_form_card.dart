@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:opencode_go/l10n/app_localizations.dart';
 
 import '../../theme/app_spacing.dart';
 import '../common/app_section.dart';
@@ -13,12 +14,13 @@ class ConnectFormCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return Card(
       child: Padding(
         padding: AppSpacing.cardContentPadding,
         child: AppSection(
-          title: '连接设置',
-          description: '输入桌面端 OpenCode 的主机信息与配对码。',
+          title: l10n.connectFormTitle,
+          description: l10n.connectFormDesc,
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: children,

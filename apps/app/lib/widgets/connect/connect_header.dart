@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:opencode_go/l10n/app_localizations.dart';
 
 import '../../theme/app_spacing.dart';
 
@@ -7,6 +8,7 @@ class ConnectHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final colorScheme = Theme.of(context).colorScheme;
     final textTheme = Theme.of(context).textTheme;
 
@@ -29,7 +31,7 @@ class ConnectHeader extends StatelessWidget {
         ),
         const SizedBox(height: AppSpacing.sm),
         Text(
-          '把手机接入桌面端 OpenCode，继续你的工作区会话、历史记录和流式响应。',
+          l10n.connectSubtitle,
           style: textTheme.bodyMedium?.copyWith(
             color: colorScheme.onSurfaceVariant,
           ),

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:dio/dio.dart';
+import 'package:opencode_go/l10n/app_localizations.dart';
 
 import '../providers/connection_provider.dart';
 import '../services/api_client.dart';
@@ -74,6 +75,7 @@ class _ConnectScreenState extends ConsumerState<ConnectScreen> {
   }
 
   Future<void> _connect() async {
+    final l10n = AppLocalizations.of(context)!;
     final ip = _ipController.text.trim();
     final port = _portController.text.trim();
     final code = _codeController.text.trim();
@@ -100,7 +102,7 @@ class _ConnectScreenState extends ConsumerState<ConnectScreen> {
           if (!mounted) return;
           setState(() {
             _loading = false;
-            _error = '连接失败，请检查 IP 和端口是否正确，以及 OpenCode Go 是否在运行';
+            _error = l10n.connectErrorFailed;
           });
           return;
         }
@@ -108,7 +110,7 @@ class _ConnectScreenState extends ConsumerState<ConnectScreen> {
         if (!mounted) return;
         setState(() {
           _loading = false;
-          _error = '连接失败，请检查 IP 和端口是否正确，以及 OpenCode Go 是否在运行';
+          _error = l10n.connectErrorFailed;
         });
         return;
       }
@@ -121,12 +123,12 @@ class _ConnectScreenState extends ConsumerState<ConnectScreen> {
         if (e.response?.statusCode == 401) {
           setState(() {
             _loading = false;
-            _error = '配对码错误，请重新输入';
+            _error = l10n.connectErrorCode;
           });
         } else {
           setState(() {
             _loading = false;
-            _error = '验证失败，请检查网络连接';
+            _error = l10n.connectErrorNetwork;
           });
         }
         return;
@@ -143,15 +145,16 @@ class _ConnectScreenState extends ConsumerState<ConnectScreen> {
       if (!mounted) return;
       setState(() {
         _loading = false;
-        _error = '连接失败，请检查 IP 和端口是否正确，以及 OpenCode Go 是否在运行';
+        _error = l10n.connectErrorFailed;
       });
     }
   }
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     if (!_initialized) {
-      return const Scaffold(body: AppLoadingState(message: '正在读取上次成功的连接配置'));
+      return Scaffold(body: AppLoadingState(message: l10n.connectLoadingConfig));
     }
 
     return AppScaffold(
@@ -165,8 +168,8 @@ class _ConnectScreenState extends ConsumerState<ConnectScreen> {
             children: [
               ServerHostField(
                 controller: _ipController,
-                labelText: 'IP 地址',
-                hintText: '例如：192.168.1.100',
+                labelText: l10n.connectIpLabel,
+                hintText: l10n.connectIpHint,
                 icon: Icons.lan_outlined,
                 keyboardType: TextInputType.url,
                 onSubmitted: (_) => _connect(),
@@ -174,8 +177,8 @@ class _ConnectScreenState extends ConsumerState<ConnectScreen> {
               const SizedBox(height: AppSpacing.md),
               ServerHostField(
                 controller: _portController,
-                labelText: '端口',
-                hintText: '38096',
+                labelText: l10n.connectPortLabel,
+                hintText: l10n.connectPortHint,
                 icon: Icons.settings_ethernet,
                 keyboardType: TextInputType.number,
                 onSubmitted: (_) => _connect(),
@@ -198,7 +201,7 @@ class _ConnectScreenState extends ConsumerState<ConnectScreen> {
                         width: 20,
                         child: CircularProgressIndicator(strokeWidth: 2),
                       )
-                    : const Text('连接到桌面端'),
+                    : Text(l10n.connectButton),
               ),
             ],
           ),
