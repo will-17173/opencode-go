@@ -29,37 +29,31 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       context: context,
       builder: (context) => AlertDialog(
         title: Text(l10n.settingsLanguage),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            RadioListTile<Locale?>(
-              title: Text(l10n.settingsLanguageSystem),
-              value: null,
-              groupValue: currentLocale,
-              onChanged: (value) {
-                ref.read(localeProvider.notifier).setLocale(value);
-                Navigator.of(context).pop();
-              },
-            ),
-            RadioListTile<Locale?>(
-              title: const Text('中文'),
-              value: const Locale('zh'),
-              groupValue: currentLocale,
-              onChanged: (value) {
-                ref.read(localeProvider.notifier).setLocale(value);
-                Navigator.of(context).pop();
-              },
-            ),
-            RadioListTile<Locale?>(
-              title: const Text('English'),
-              value: const Locale('en'),
-              groupValue: currentLocale,
-              onChanged: (value) {
-                ref.read(localeProvider.notifier).setLocale(value);
-                Navigator.of(context).pop();
-              },
-            ),
-          ],
+        content: RadioGroup<Locale?>(
+          groupValue: currentLocale,
+          onChanged: (value) {
+            if (value != null) {
+              ref.read(localeProvider.notifier).setLocale(value);
+              Navigator.of(context).pop();
+            }
+          },
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              RadioListTile<Locale?>(
+                title: Text(l10n.settingsLanguageSystem),
+                value: null,
+              ),
+              RadioListTile<Locale?>(
+                title: const Text('中文'),
+                value: const Locale('zh'),
+              ),
+              RadioListTile<Locale?>(
+                title: const Text('English'),
+                value: const Locale('en'),
+              ),
+            ],
+          ),
         ),
       ),
     );
