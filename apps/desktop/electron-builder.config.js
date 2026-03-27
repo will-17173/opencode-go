@@ -15,6 +15,9 @@ module.exports = {
   appId: 'ai.opencode.go',
   productName: 'OpenCode Go',
 
+  // 自定义安装包命名格式
+  artifactName: 'opencode_go-${version}-${os}-${arch}.${ext}',
+
   // Windows 代码签名配置（通过环境变量）
   cscLink: process.env.CSC_LINK,
   cscKeyPassword: process.env.CSC_KEY_PASSWORD,

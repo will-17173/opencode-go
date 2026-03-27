@@ -43,7 +43,7 @@ lib/
 ### 路由流程
 
 应用启动时，`_AppEntry` 监听 `connectionProvider`：
-- 有连接 → `/home`（工作目录列表）
+- 有连接 → `/home`（工作区列表）
 - 无连接 → `/connect`（连接配置页）
 - 断网信号触发 → `pushNamedAndRemoveUntil('/connect')` 清栈返回
 
@@ -56,7 +56,7 @@ lib/
 | `connectionProvider` | `AsyncNotifierProvider<_, String?>` | 连接状态（主机地址）、SharedPreferences 持久化 |
 | `chatProvider` | `NotifierProvider<_, List<ChatMessage>>` | 消息列表、SSE 流订阅管理、流式更新 |
 | `sessionsProvider` | `FutureProvider.family<_, String>` | 目录下的历史会话列表 |
-| `directoriesProvider` | `FutureProvider<List<String>>` | 全部工作目录列表 |
+| `directoriesProvider` | `FutureProvider<List<String>>` | 全部工作区列表 |
 | `currentSessionIdProvider` | `StateProvider<String?>` | 当前活跃会话 ID |
 | `connectionLostProvider` | `StateProvider<bool>` | 断网信号，main.dart 中监听并跳转 |
 

@@ -30,7 +30,7 @@
       },
       {
         "title": "历史对话浏览",
-        "description": "按工作目录浏览全部对话历史，随时回顾"
+        "description": "按工作区浏览全部对话历史，随时回顾"
       },
       {
         "title": "自动重连",
@@ -45,7 +45,7 @@
       { "title": "获取连接信息", "description": "桌面 UI 显示本机 IP、代理端口和 6 位配对码" },
       { "title": "手机输入连接", "description": "在手机 App 中输入 IP:端口 和配对码" },
       { "title": "配对成功", "description": "验证通过，建立安全的局域网连接" },
-      { "title": "开始对话", "description": "浏览工作目录，创建或继续 AI 对话" }
+      { "title": "开始对话", "description": "浏览工作区，创建或继续 AI 对话" }
     ]
   },
   "use_cases": {

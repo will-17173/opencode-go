@@ -21,7 +21,7 @@ class ChatEmptyState extends StatelessWidget {
             Text('开始一个新对话', style: textTheme.titleLarge),
             const SizedBox(height: AppSpacing.sm),
             Text(
-              '发送消息或添加图片附件，OpenCode 会继续当前工作目录下的对话上下文。',
+              '发送消息或添加图片附件，OpenCode 会继续当前工作区下的对话上下文。',
               textAlign: TextAlign.center,
               style: textTheme.bodyMedium?.copyWith(
                 color: colorScheme.onSurfaceVariant,

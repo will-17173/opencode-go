@@ -47,11 +47,11 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           const HomeHeader(
-            title: '工作目录',
+            title: '工作区',
             subtitle: '选择桌面端已经开始使用的目录，查看历史会话或继续新的对话。',
           ),
           directoriesAsync.when(
-            loading: () => const AppLoadingState(message: '正在同步桌面端的工作目录列表'),
+            loading: () => const AppLoadingState(message: '正在同步桌面端的工作区列表'),
             error: (e, _) => AppErrorState(
               message: '目录加载失败：$e',
               onRetry: () => ref.invalidate(directoriesProvider),
@@ -60,8 +60,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               if (dirs.isEmpty) {
                 return const AppEmptyState(
                   icon: Icons.folder_off_outlined,
-                  title: '暂无工作目录',
-                  message: '请先在 PC 端开始一个对话，随后这里会显示可继续的工作目录。',
+                  title: '暂无工作区',
+                  message: '请先在 PC 端开始一个对话，随后这里会显示可继续的工作区。',
                 );
               }
 

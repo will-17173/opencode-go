@@ -222,30 +222,56 @@ export function ConnectionPanel({
                 <StatusDot running={opencodeRunning} healthy={opencodeHealthy} />
               </div>
             </div>
-            <div className="flex items-center gap-3 rounded-xl border border-border/60 bg-white px-3 py-2.5">
-              <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-slate-100 text-slate-600">
-                <Wifi className="h-4 w-4" />
-              </div>
-              <div className="min-w-0">
-                <p className="text-[11px] uppercase tracking-[0.12em] text-muted-foreground">IP</p>
-                <div className="flex items-center gap-1.5">
-                  <span className="truncate font-medium text-foreground">{primaryIp}</span>
-                  {ips && ips.length > 1 ? (
-                    <span className="rounded bg-secondary px-1.5 py-0.5 text-[11px] text-muted-foreground">
-                      +{ips.length - 1}
-                    </span>
-                  ) : null}
+            <Popover>
+              <PopoverTrigger asChild>
+                <div className="flex cursor-pointer items-center gap-3 rounded-xl border border-border/60 bg-white px-3 py-2.5 transition-colors hover:border-border">
+                  <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-slate-100 text-slate-600">
+                    <Wifi className="h-4 w-4" />
+                  </div>
+                  <div className="min-w-0">
+                    <p className="text-[11px] uppercase tracking-[0.12em] text-muted-foreground">IP</p>
+                    <div className="flex items-center gap-1.5">
+                      <span className="truncate font-medium text-foreground">{primaryIp}</span>
+                      {ips && ips.length > 1 ? (
+                        <span className="rounded bg-secondary px-1.5 py-0.5 text-[11px] text-muted-foreground">
+                          +{ips.length - 1}
+                        </span>
+                      ) : null}
+                    </div>
+                  </div>
                 </div>
-              </div>
-            </div>
+              </PopoverTrigger>
+              <PopoverContent className="w-64 p-0" align="start">
+                <div className="border-b border-border/60 px-4 py-3">
+                  <h3 className="text-sm font-semibold text-foreground">IP 地址</h3>
+                  <p className="text-xs text-muted-foreground">共 {ips?.length ?? 0} 个地址</p>
+                </div>
+                <div className="max-h-60 overflow-y-auto">
+                  {ips && ips.length > 0 ? (
+                    ips.map((ip) => (
+                      <div
+                        key={ip}
+                        className="flex items-center justify-between gap-2 border-b border-border/40 px-4 py-2.5 last:border-b-0"
+                      >
+                        <span className="font-mono text-sm text-foreground">{ip}</span>
+                        <CopyBtn text={ip} />
+                      </div>
+                    ))
+                  ) : (
+                    <p className="px-4 py-6 text-center text-sm text-muted-foreground">未获取到 IP</p>
+                  )}
+                </div>
+              </PopoverContent>
+            </Popover>
             <div className="flex items-center gap-3 rounded-xl border border-border/60 bg-white px-3 py-2.5">
               <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-slate-100 text-slate-600">
                 <Hash className="h-4 w-4" />
               </div>
-              <div className="min-w-0">
+              <div className="min-w-0 flex-1">
                 <p className="text-[11px] uppercase tracking-[0.12em] text-muted-foreground">端口</p>
                 <span className="font-mono font-medium text-foreground">{proxyPort ?? '...'}</span>
               </div>
+              {proxyPort ? <CopyBtn text={String(proxyPort)} /> : null}
             </div>
             <div className="flex items-center gap-3 rounded-xl border border-border/60 bg-white px-3 py-2.5">
               <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-slate-100 text-slate-600">
@@ -322,10 +348,10 @@ export function ConnectionPanel({
           </div>
         </section>
 
-        {/* 工作目录紧凑列表 */}
+        {/* 工作区紧凑列表 */}
         <section className="space-y-4">
           <div className="flex items-center justify-between">
-            <h2 className="text-base font-semibold tracking-tight text-foreground">目录管理</h2>
+            <h2 className="text-base font-semibold tracking-tight text-foreground">工作区管理</h2>
             <div className="flex items-center gap-3">
               <span className="text-sm text-muted-foreground">{projects.length} 个目录</span>
               <Button
@@ -334,7 +360,7 @@ export function ConnectionPanel({
                 className="h-9 rounded-lg bg-primary px-3 text-sm text-primary-foreground hover:bg-primary/90"
               >
                 <Plus className="mr-1.5 h-4 w-4" />
-                添加目录
+                添加工作区
               </Button>
             </div>
           </div>
@@ -407,7 +433,7 @@ export function ConnectionPanel({
           )}
 
           {projects.length === 0 && (
-            <p className="text-sm text-muted-foreground">还没有目录，先添加一个开始使用。</p>
+            <p className="text-sm text-muted-foreground">还没有工作区，先添加一个开始使用。</p>
           )}
         </section>
       </div>
@@ -416,7 +442,7 @@ export function ConnectionPanel({
       <AlertDialog open={!!deleteTarget} onOpenChange={(open) => !open && setDeleteTarget(null)}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>移除工作目录</AlertDialogTitle>
+            <AlertDialogTitle>移除工作区</AlertDialogTitle>
             <AlertDialogDescription>
               确认移除「{deleteTarget?.name}」？仅移除引用，不删除磁盘文件。
             </AlertDialogDescription>

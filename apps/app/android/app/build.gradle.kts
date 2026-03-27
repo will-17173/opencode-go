@@ -37,6 +37,15 @@ android {
             signingConfig = signingConfigs.getByName("debug")
         }
     }
+
+    // 自定义 APK 输出文件名
+    applicationVariants.all {
+        outputs.all {
+            val versionName = versionName
+            val outputFileName = "opencode_go-$versionName-android.apk"
+            (this as com.android.build.gradle.internal.api.BaseVariantOutputImpl).outputFileName = outputFileName
+        }
+    }
 }
 
 flutter {

@@ -33,7 +33,7 @@ npm run generate-manifest  # 生成更新 manifest
 | 文件 | 内容 |
 |---|---|
 | `settings.json` | 模型配置、API Key、配对码 |
-| `projects.json` | 用户工作目录列表（`id`, `name`, `path`） |
+| `projects.json` | 用户工作区列表（`id`, `name`, `path`） |
 | `main.log` | 主进程运行日志 |
 | `opencode-config/` | 内嵌 OpenCode 后端的独立配置目录 |
 

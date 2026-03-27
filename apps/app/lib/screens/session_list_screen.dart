@@ -71,7 +71,7 @@ class _SessionListScreenState extends ConsumerState<SessionListScreen> {
             return const AppEmptyState(
               icon: Icons.history_outlined,
               title: '暂无历史会话',
-              message: '在这个工作目录下还没有历史对话，点击右下角即可开始新的会话。',
+              message: '在这个工作区下还没有历史对话，点击右下角即可开始新的会话。',
             );
           }
 
