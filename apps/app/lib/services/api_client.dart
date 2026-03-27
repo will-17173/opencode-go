@@ -245,9 +245,8 @@ class ApiClient {
         'deviceName': deviceName,
         'platform': platform,
       });
-      print('[device] registered successfully: $deviceId');
     } catch (e) {
-      print('[device] registration failed: $e');
+      // Device registration failed, will retry on next connection
     }
   }
 }
