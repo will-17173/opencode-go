@@ -48,7 +48,7 @@ export default function UseCases() {
           >
             Your workflow,
             <br />
-            <span style={{ color: '#8A8F98', fontWeight: 400 }}>untethered from your desk.</span>
+            <span style={{ color: '#b0b7c3', fontWeight: 400 }}>untethered from your desk.</span>
           </h2>
         </motion.div>
 
@@ -60,8 +60,8 @@ export default function UseCases() {
                 key={i}
                 className="relative rounded-2xl p-7 overflow-hidden"
                 style={{
-                  background: 'rgba(255,255,255,0.03)',
-                  border: '1px solid rgba(255,255,255,0.07)',
+                  background: 'rgba(255,255,255,0.06)',
+                  border: '1px solid rgba(255,255,255,0.12)',
                 }}
                 initial={{ opacity: 0, y: 24 }}
                 whileInView={{ opacity: 1, y: 0 }}
@@ -94,7 +94,7 @@ export default function UseCases() {
                 </h3>
                 <p
                   className="text-sm leading-relaxed relative z-10"
-                  style={{ color: '#8A8F98' }}
+                  style={{ color: '#b0b7c3' }}
                 >
                   {item.description}
                 </p>

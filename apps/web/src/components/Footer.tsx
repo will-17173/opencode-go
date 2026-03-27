@@ -20,8 +20,8 @@ export default function Footer() {
         {/* Logo + 版权 */}
         <div className="flex items-center gap-3">
           <span className="font-semibold text-sm" style={{ color: '#EDEDEF' }}>OpenCode Go</span>
-          <span style={{ color: '#4a4a5a' }}>·</span>
-          <p className="text-sm" style={{ color: '#4a4a5a' }}>{t('footer.copyright')}</p>
+          <span style={{ color: '#6b7280' }}>·</span>
+          <p className="text-sm" style={{ color: '#6b7280' }}>{t('footer.copyright')}</p>
         </div>
 
         <div className="flex items-center gap-5">
@@ -31,9 +31,9 @@ export default function Footer() {
             target="_blank"
             rel="noopener noreferrer"
             className="flex items-center gap-1.5 text-sm transition-colors duration-200"
-            style={{ color: '#8A8F98' }}
+            style={{ color: '#b0b7c3' }}
             onMouseEnter={(e) => { e.currentTarget.style.color = '#EDEDEF' }}
-            onMouseLeave={(e) => { e.currentTarget.style.color = '#8A8F98' }}
+            onMouseLeave={(e) => { e.currentTarget.style.color = '#b0b7c3' }}
           >
             <Github className="w-4 h-4" />
             {t('footer.github')}
@@ -45,7 +45,7 @@ export default function Footer() {
           {/* 语言切换 */}
           <div
             className="flex items-center rounded-lg overflow-hidden text-xs"
-            style={{ border: '1px solid rgba(255,255,255,0.08)' }}
+            style={{ border: '1px solid rgba(255,255,255,0.13)' }}
           >
             {(['zh', 'en'] as const).map((lang) => (
               <button
@@ -54,7 +54,7 @@ export default function Footer() {
                 className="px-3 py-1.5 transition-all duration-200"
                 style={{
                   background: i18n.language === lang ? 'rgba(99,102,241,0.2)' : 'transparent',
-                  color: i18n.language === lang ? '#818cf8' : '#8A8F98',
+                  color: i18n.language === lang ? '#818cf8' : '#b0b7c3',
                   cursor: 'pointer',
                   border: 'none',
                 }}
@@ -65,7 +65,7 @@ export default function Footer() {
                 }}
                 onMouseLeave={(e) => {
                   if (i18n.language !== lang) {
-                    e.currentTarget.style.color = '#8A8F98'
+                    e.currentTarget.style.color = '#b0b7c3'
                   }
                 }}
               >

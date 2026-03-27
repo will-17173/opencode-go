@@ -52,7 +52,7 @@ export default function Features() {
           >
             Everything you need,
             <br />
-            <span style={{ color: '#8A8F98', fontWeight: 400 }}>on the device in your pocket.</span>
+            <span style={{ color: '#b0b7c3', fontWeight: 400 }}>on the device in your pocket.</span>
           </h2>
         </motion.div>
 
@@ -68,8 +68,8 @@ export default function Features() {
                 key={i}
                 className="relative rounded-2xl p-6 cursor-default"
                 style={{
-                  background: 'rgba(255,255,255,0.03)',
-                  border: '1px solid rgba(255,255,255,0.07)',
+                  background: 'rgba(255,255,255,0.06)',
+                  border: '1px solid rgba(255,255,255,0.12)',
                   transition: 'all 0.3s cubic-bezier(0.16,1,0.3,1)',
                 }}
                 initial={{ opacity: 0, y: 20 }}
@@ -85,8 +85,8 @@ export default function Features() {
                 }}
                 onMouseLeave={(e) => {
                   const el = e.currentTarget
-                  el.style.background = 'rgba(255,255,255,0.03)'
-                  el.style.borderColor = 'rgba(255,255,255,0.07)'
+                  el.style.background = 'rgba(255,255,255,0.06)'
+                  el.style.borderColor = 'rgba(255,255,255,0.12)'
                   el.style.transform = 'translateY(0)'
                   el.style.boxShadow = 'none'
                 }}
@@ -108,7 +108,7 @@ export default function Features() {
                 </h3>
                 <p
                   className="text-sm leading-relaxed"
-                  style={{ color: '#8A8F98' }}
+                  style={{ color: '#b0b7c3' }}
                 >
                   {item.description}
                 </p>

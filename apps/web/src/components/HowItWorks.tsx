@@ -35,7 +35,7 @@ export default function HowItWorks() {
           >
             Up and running
             <br />
-            <span style={{ color: '#8A8F98', fontWeight: 400 }}>in five simple steps.</span>
+            <span style={{ color: '#b0b7c3', fontWeight: 400 }}>in five simple steps.</span>
           </h2>
         </motion.div>
 
@@ -69,9 +69,9 @@ export default function HowItWorks() {
                   style={{
                     background: i === 0
                       ? 'linear-gradient(135deg, #6366f1, #8b5cf6)'
-                      : 'rgba(255,255,255,0.04)',
-                    border: `1px solid ${i === 0 ? 'transparent' : 'rgba(255,255,255,0.08)'}`,
-                    color: i === 0 ? '#fff' : '#8A8F98',
+                      : 'rgba(255,255,255,0.12)',
+                    border: `1px solid ${i === 0 ? 'transparent' : 'rgba(255,255,255,0.13)'}`,
+                    color: i === 0 ? '#fff' : '#b0b7c3',
                     boxShadow: i === 0 ? '0 0 20px rgba(99,102,241,0.4)' : 'none',
                   }}
                 >
@@ -82,8 +82,8 @@ export default function HowItWorks() {
                 <div
                   className="flex-1 rounded-2xl p-5"
                   style={{
-                    background: 'rgba(255,255,255,0.03)',
-                    border: '1px solid rgba(255,255,255,0.07)',
+                    background: 'rgba(255,255,255,0.06)',
+                    border: '1px solid rgba(255,255,255,0.12)',
                   }}
                 >
                   <h3
@@ -94,7 +94,7 @@ export default function HowItWorks() {
                   </h3>
                   <p
                     className="text-sm leading-relaxed"
-                    style={{ color: '#8A8F98' }}
+                    style={{ color: '#b0b7c3' }}
                   >
                     {step.description}
                   </p>

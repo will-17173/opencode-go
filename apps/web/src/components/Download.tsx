@@ -26,8 +26,8 @@ export default function Download() {
         <motion.div
           className="relative rounded-3xl overflow-hidden p-10 md:p-14 text-center"
           style={{
-            background: 'rgba(255,255,255,0.03)',
-            border: '1px solid rgba(255,255,255,0.08)',
+            background: 'rgba(255,255,255,0.06)',
+            border: '1px solid rgba(255,255,255,0.13)',
           }}
           initial={{ opacity: 0, y: 24 }}
           whileInView={{ opacity: 1, y: 0 }}
@@ -52,7 +52,7 @@ export default function Download() {
               style={{
                 background: 'rgba(255,255,255,0.05)',
                 border: '1px solid rgba(255,255,255,0.1)',
-                color: '#8A8F98',
+                color: '#b0b7c3',
               }}
               onMouseEnter={(e) => {
                 e.currentTarget.style.borderColor = 'rgba(250,204,21,0.4)'
@@ -60,7 +60,7 @@ export default function Download() {
               }}
               onMouseLeave={(e) => {
                 e.currentTarget.style.borderColor = 'rgba(255,255,255,0.1)'
-                e.currentTarget.style.color = '#8A8F98'
+                e.currentTarget.style.color = '#b0b7c3'
               }}
             >
               <Github className="w-4 h-4" />
@@ -77,7 +77,7 @@ export default function Download() {
           </h2>
           <p
             className="relative z-10 mb-10"
-            style={{ color: '#8A8F98' }}
+            style={{ color: '#b0b7c3' }}
           >
             {t('download.description')}
           </p>
@@ -92,8 +92,8 @@ export default function Download() {
                 rel="noopener noreferrer"
                 className="flex flex-col items-center gap-1.5 px-4 py-4 rounded-2xl transition-all duration-200"
                 style={{
-                  background: 'rgba(255,255,255,0.04)',
-                  border: '1px solid rgba(255,255,255,0.08)',
+                  background: 'rgba(255,255,255,0.12)',
+                  border: '1px solid rgba(255,255,255,0.13)',
                   color: '#EDEDEF',
                 }}
                 onMouseEnter={(e) => {
@@ -102,14 +102,14 @@ export default function Download() {
                   e.currentTarget.style.transform = 'translateY(-2px)'
                 }}
                 onMouseLeave={(e) => {
-                  e.currentTarget.style.background = 'rgba(255,255,255,0.04)'
-                  e.currentTarget.style.borderColor = 'rgba(255,255,255,0.08)'
+                  e.currentTarget.style.background = 'rgba(255,255,255,0.12)'
+                  e.currentTarget.style.borderColor = 'rgba(255,255,255,0.13)'
                   e.currentTarget.style.transform = 'translateY(0)'
                 }}
               >
                 <Icon className="w-5 h-5" style={{ color: '#818cf8' }} />
                 <span className="text-sm font-medium">{label}</span>
-                <span className="text-xs" style={{ color: '#4a4a5a' }}>{sub}</span>
+                <span className="text-xs" style={{ color: '#6b7280' }}>{sub}</span>
               </a>
             ))}
           </div>
@@ -117,7 +117,7 @@ export default function Download() {
           {/* 提示文字 */}
           <p
             className="relative z-10 text-sm flex items-center justify-center gap-1.5"
-            style={{ color: '#4a4a5a' }}
+            style={{ color: '#6b7280' }}
           >
             {t('download.coming_soon')}
             <a

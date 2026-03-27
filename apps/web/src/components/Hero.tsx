@@ -113,7 +113,7 @@ export default function Hero() {
             {/* 描述 */}
             <motion.p
               className="text-lg leading-relaxed mb-10 max-w-lg"
-              style={{ color: '#8A8F98' }}
+              style={{ color: '#b0b7c3' }}
               initial={{ opacity: 0, x: -20 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ duration: 0.6, delay: 0.2, ease }}
@@ -159,7 +159,7 @@ export default function Hero() {
                   border: '1px solid rgba(255,255,255,0.1)',
                 }}
                 onMouseEnter={(e) => {
-                  e.currentTarget.style.background = 'rgba(255,255,255,0.08)'
+                  e.currentTarget.style.background = 'rgba(255,255,255,0.13)'
                   e.currentTarget.style.borderColor = 'rgba(255,255,255,0.18)'
                 }}
                 onMouseLeave={(e) => {
@@ -215,8 +215,8 @@ export default function Hero() {
               className="relative rounded-2xl overflow-hidden"
               style={{
                 background: 'rgba(13,13,20,0.9)',
-                border: '1px solid rgba(255,255,255,0.08)',
-                boxShadow: '0 30px 80px rgba(0,0,0,0.6), 0 0 0 1px rgba(255,255,255,0.04)',
+                border: '1px solid rgba(255,255,255,0.13)',
+                boxShadow: '0 30px 80px rgba(0,0,0,0.6), 0 0 0 1px rgba(255,255,255,0.12)',
                 backdropFilter: 'blur(20px)',
               }}
             >
@@ -232,7 +232,7 @@ export default function Hero() {
                 </div>
                 <div
                   className="text-xs px-3 py-1 rounded-md"
-                  style={{ color: '#4a4a5a', background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.06)' }}
+                  style={{ color: '#6b7280', background: 'rgba(255,255,255,0.12)', border: '1px solid rgba(255,255,255,0.06)' }}
                 >
                   opencode — ~/projects/my-app
                 </div>
@@ -248,7 +248,7 @@ export default function Hero() {
                 <div className="space-y-4">
                   <div>
                     <div className="flex items-start gap-2 mb-1.5">
-                      <span className="text-xs" style={{ color: '#4a4a5a' }}>user</span>
+                      <span className="text-xs" style={{ color: '#6b7280' }}>user</span>
                     </div>
                     <div
                       className="rounded-xl px-4 py-2.5 text-sm inline-block max-w-xs"
@@ -260,11 +260,11 @@ export default function Hero() {
 
                   <div>
                     <div className="flex items-start gap-2 mb-1.5">
-                      <span className="text-xs" style={{ color: '#4a4a5a' }}>assistant</span>
+                      <span className="text-xs" style={{ color: '#6b7280' }}>assistant</span>
                     </div>
                     <div
                       className="rounded-xl px-4 py-3 text-sm"
-                      style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)', color: '#EDEDEF' }}
+                      style={{ background: 'rgba(255,255,255,0.12)', border: '1px solid rgba(255,255,255,0.13)', color: '#EDEDEF' }}
                     >
                       <p className="mb-3" style={{ color: '#9ca3af' }}>分析你的代码，发现两处优化点：</p>
                       <div
@@ -284,7 +284,7 @@ export default function Hero() {
 
                   <div>
                     <div className="flex items-start gap-2 mb-1.5">
-                      <span className="text-xs" style={{ color: '#4a4a5a' }}>user</span>
+                      <span className="text-xs" style={{ color: '#6b7280' }}>user</span>
                     </div>
                     <div
                       className="rounded-xl px-4 py-2.5 text-sm inline-block max-w-xs"
@@ -296,7 +296,7 @@ export default function Hero() {
 
                   {/* 打字指示器 */}
                   <div className="flex items-center gap-2">
-                    <div className="flex items-center gap-1 px-3 py-2 rounded-xl" style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)' }}>
+                    <div className="flex items-center gap-1 px-3 py-2 rounded-xl" style={{ background: 'rgba(255,255,255,0.12)', border: '1px solid rgba(255,255,255,0.13)' }}>
                       {[0, 1, 2].map((i) => (
                         <motion.div
                           key={i}
@@ -307,7 +307,7 @@ export default function Hero() {
                         />
                       ))}
                     </div>
-                    <span className="text-xs" style={{ color: '#4a4a5a' }}>正在分析...</span>
+                    <span className="text-xs" style={{ color: '#6b7280' }}>正在分析...</span>
                   </div>
                 </div>
               </div>
@@ -315,9 +315,9 @@ export default function Hero() {
               {/* 底部输入栏 */}
               <div
                 className="flex items-center gap-3 px-4 py-3 mx-4 mb-4 rounded-xl"
-                style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)' }}
+                style={{ background: 'rgba(255,255,255,0.12)', border: '1px solid rgba(255,255,255,0.13)' }}
               >
-                <span className="text-sm flex-1" style={{ color: '#4a4a5a', fontFamily: 'monospace' }}>
+                <span className="text-sm flex-1" style={{ color: '#6b7280', fontFamily: 'monospace' }}>
                   从手机发送的消息...
                 </span>
                 <div
@@ -353,15 +353,15 @@ export default function Hero() {
                   <div className="rounded-lg px-2.5 py-2" style={{ background: 'rgba(99,102,241,0.15)', border: '1px solid rgba(99,102,241,0.2)' }}>
                     <p className="text-xs" style={{ color: '#c7d2fe' }}>帮我优化性能</p>
                   </div>
-                  <div className="rounded-lg px-2.5 py-2" style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)' }}>
+                  <div className="rounded-lg px-2.5 py-2" style={{ background: 'rgba(255,255,255,0.12)', border: '1px solid rgba(255,255,255,0.13)' }}>
                     <p className="text-xs" style={{ color: '#9ca3af' }}>分析完成 ✓</p>
                   </div>
                 </div>
                 <div
                   className="mt-2 flex items-center gap-1.5 rounded-lg px-2.5 py-1.5"
-                  style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.06)' }}
+                  style={{ background: 'rgba(255,255,255,0.12)', border: '1px solid rgba(255,255,255,0.06)' }}
                 >
-                  <span className="text-xs flex-1" style={{ color: '#4a4a5a' }}>发消息...</span>
+                  <span className="text-xs flex-1" style={{ color: '#6b7280' }}>发消息...</span>
                 </div>
               </div>
               <div className="flex justify-center pb-2">
