@@ -12,44 +12,66 @@ export default function Footer() {
   }
 
   return (
-    <footer className="py-10 px-6 border-t" style={{ borderColor: 'rgba(255,255,255,0.08)' }}>
+    <footer
+      className="py-8 px-6 relative"
+      style={{ borderTop: '1px solid rgba(255,255,255,0.05)' }}
+    >
       <div className="max-w-5xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4">
-        <p className="text-gray-500 text-sm">{t('footer.copyright')}</p>
+        {/* Logo + 版权 */}
+        <div className="flex items-center gap-3">
+          <span className="font-semibold text-sm" style={{ color: '#EDEDEF' }}>OpenCode Go</span>
+          <span style={{ color: '#4a4a5a' }}>·</span>
+          <p className="text-sm" style={{ color: '#4a4a5a' }}>{t('footer.copyright')}</p>
+        </div>
 
-        <div className="flex items-center gap-6">
+        <div className="flex items-center gap-5">
+          {/* GitHub */}
           <a
             href={GITHUB_URL}
             target="_blank"
             rel="noopener noreferrer"
-            className="text-gray-400 hover:text-white transition-colors flex items-center gap-1.5 text-sm"
+            className="flex items-center gap-1.5 text-sm transition-colors duration-200"
+            style={{ color: '#8A8F98' }}
+            onMouseEnter={(e) => { e.currentTarget.style.color = '#EDEDEF' }}
+            onMouseLeave={(e) => { e.currentTarget.style.color = '#8A8F98' }}
           >
             <Github className="w-4 h-4" />
             {t('footer.github')}
           </a>
 
+          {/* 分隔符 */}
+          <div style={{ width: '1px', height: '14px', background: 'rgba(255,255,255,0.1)' }} />
+
           {/* 语言切换 */}
-          <div className="flex items-center gap-1 text-sm">
-            <button
-              onClick={() => switchLang('zh')}
-              className={`px-2 py-1 rounded transition-colors ${
-                i18n.language === 'zh'
-                  ? 'text-white bg-indigo-500/20 border border-indigo-500/40'
-                  : 'text-gray-500 hover:text-gray-300'
-              }`}
-            >
-              {t('footer.lang_zh')}
-            </button>
-            <span className="text-gray-600">/</span>
-            <button
-              onClick={() => switchLang('en')}
-              className={`px-2 py-1 rounded transition-colors ${
-                i18n.language === 'en'
-                  ? 'text-white bg-indigo-500/20 border border-indigo-500/40'
-                  : 'text-gray-500 hover:text-gray-300'
-              }`}
-            >
-              {t('footer.lang_en')}
-            </button>
+          <div
+            className="flex items-center rounded-lg overflow-hidden text-xs"
+            style={{ border: '1px solid rgba(255,255,255,0.08)' }}
+          >
+            {(['zh', 'en'] as const).map((lang) => (
+              <button
+                key={lang}
+                onClick={() => switchLang(lang)}
+                className="px-3 py-1.5 transition-all duration-200"
+                style={{
+                  background: i18n.language === lang ? 'rgba(99,102,241,0.2)' : 'transparent',
+                  color: i18n.language === lang ? '#818cf8' : '#8A8F98',
+                  cursor: 'pointer',
+                  border: 'none',
+                }}
+                onMouseEnter={(e) => {
+                  if (i18n.language !== lang) {
+                    e.currentTarget.style.color = '#EDEDEF'
+                  }
+                }}
+                onMouseLeave={(e) => {
+                  if (i18n.language !== lang) {
+                    e.currentTarget.style.color = '#8A8F98'
+                  }
+                }}
+              >
+                {lang === 'zh' ? t('footer.lang_zh') : t('footer.lang_en')}
+              </button>
+            ))}
           </div>
         </div>
       </div>

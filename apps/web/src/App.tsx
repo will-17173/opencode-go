@@ -7,7 +7,15 @@ import Footer from './components/Footer'
 
 export default function App() {
   return (
-    <div className="min-h-screen" style={{ backgroundColor: '#0a0a0f' }}>
+    <div className="min-h-screen relative overflow-x-hidden">
+      {/* 全局背景渐变 */}
+      <div
+        className="fixed inset-0 pointer-events-none"
+        style={{
+          background: 'linear-gradient(180deg, #0a0a0f 0%, #050508 40%, #020203 100%)',
+          zIndex: -1,
+        }}
+      />
       <Hero />
       <Features />
       <HowItWorks />
