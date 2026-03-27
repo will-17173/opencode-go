@@ -1,10 +1,12 @@
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Eye, EyeOff, Save, CheckCircle2, Folder, Trash2, Upload, Globe, Package, RefreshCw, Sun, Moon, Monitor, Bug, Zap, Wrench, DollarSign, ExternalLink, Key, Shield } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { cn } from '@/lib/utils';
 import type { useSettings, useProviders } from '@/hooks/useSettings';
 import { useSkills } from '@/hooks/useSkills';
+import { useLanguage } from '@/hooks/useLanguage';
 import type { Skill } from '@/types/skill';
 import { useTheme, type Theme } from '@/hooks/useTheme';
 import { formatContextWindow, formatCost } from '@/types/model';
@@ -36,6 +38,7 @@ export function SettingsPanel({
   directory,
   onOpenDebugPanel,
 }: SettingsPanelProps) {
+  const { t } = useTranslation();
   const [selectedProviderId, setSelectedProviderId] = useState('');
   const [selectedModelId, setSelectedModelId] = useState('');
   const [baseURL, setBaseURL] = useState('');
@@ -47,6 +50,7 @@ export function SettingsPanel({
   const [activeTab, setActiveTab] = useState<SettingsTab>('general');
   const { skills, reload: reloadSkills } = useSkills(directory);
   const { theme, setTheme } = useTheme();
+  const { currentLanguage, setLanguage } = useLanguage();
 
   // OAuth 对话框状态
   const [oauthDialog, setOauthDialog] = useState<OAuthDialogState>({
@@ -122,7 +126,7 @@ export function SettingsPanel({
       setOauthDialog(prev => ({
         ...prev,
         loading: false,
-        error: '获取授权链接失败',
+        error: t('oauth.getError'),
       }));
     }
   }, [selectedProviderId, oauthMethodIndex, startOAuth]);
@@ -130,7 +134,7 @@ export function SettingsPanel({
   // 完成 OAuth 授权
   const handleCompleteOAuth = useCallback(async () => {
     if (!oauthDialog.code.trim()) {
-      setOauthDialog(prev => ({ ...prev, error: '请输入授权码' }));
+      setOauthDialog(prev => ({ ...prev, error: t('oauth.enterCode') }));
       return;
     }
 
@@ -159,7 +163,7 @@ export function SettingsPanel({
       setOauthDialog(prev => ({
         ...prev,
         loading: false,
-        error: '授权失败，请重试',
+        error: t('oauth.authFailed'),
       }));
     }
   }, [oauthDialog, completeOAuth, refetchProviders]);
@@ -211,7 +215,7 @@ export function SettingsPanel({
       if (!file) return;
       const filePath = (file as File & { path?: string }).path;
       if (!filePath) {
-        alert('无法获取文件路径');
+        alert(t('common.error.fileNotFound', '无法获取文件路径'));
         return;
       }
       const result = await window.electronAPI.importSkill(filePath, scope, directory);
@@ -244,7 +248,7 @@ export function SettingsPanel({
                 : 'text-muted-foreground hover:text-foreground'
             )}
           >
-            {tab === 'general' ? '通用设置' : 'Skills'}
+            {tab === 'general' ? t('tabs.general') : t('tabs.skills')}
             {activeTab === tab && (
               <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary" />
             )}
@@ -258,32 +262,32 @@ export function SettingsPanel({
           <div className="mx-auto max-w-xl space-y-8">
             {/* Provider & Model */}
             <section>
-              <h2 className="mb-4 text-sm font-medium text-muted-foreground">供应商与模型</h2>
+              <h2 className="mb-4 text-sm font-medium text-muted-foreground">{t('settings.providerAndModel')}</h2>
               <div className="rounded-xl bg-card p-5">
                 {/* 当前配置状态 */}
                 {settings.hasApiKey ? (
                   <div className="mb-4 space-y-2 rounded-md border border-border bg-background/60 p-3 text-xs">
                     <div className="flex items-center gap-2 text-sm text-primary">
                       <CheckCircle2 className="h-4 w-4" />
-                      已配置并生效
+                      {t('settings.configured')}
                     </div>
                     <div className="grid grid-cols-1 gap-1.5 text-muted-foreground">
                       <div className="flex items-center justify-between gap-3">
-                        <span>供应商</span>
+                        <span>{t('settings.provider')}</span>
                         <span className="font-mono text-foreground">{settings.activeProviderConfig.providerType}</span>
                       </div>
                       <div className="flex items-center justify-between gap-3">
-                        <span>模型</span>
+                        <span>{t('settings.model')}</span>
                         <span className="font-mono text-foreground">{settings.activeProviderConfig.model || '-'}</span>
                       </div>
                       <div className="flex items-center justify-between gap-3">
-                        <span>Base URL</span>
+                        <span>{t('settings.baseURL')}</span>
                         <span className="max-w-[60%] truncate font-mono text-foreground">
                           {settings.activeProviderConfig.baseURL || (settings.activeProviderConfig.providerType === 'openai' || settings.activeProviderConfig.providerType === 'anthropic' ? '默认' : '-')}
                         </span>
                       </div>
                       <div className="flex items-center justify-between gap-3">
-                        <span>API Key</span>
+                        <span>{t('settings.apiKey')}</span>
                         <span className="font-mono text-foreground">
                           {settings.activeProviderConfig.apiKeyMasked || '-'}
                         </span>
@@ -292,7 +296,7 @@ export function SettingsPanel({
                   </div>
                 ) : (
                   <p className="mb-4 text-sm text-muted-foreground">
-                    尚未配置模型参数
+                    {t('settings.notConfigured')}
                   </p>
                 )}
 
@@ -310,7 +314,7 @@ export function SettingsPanel({
                       }}
                       disabled={providersLoading}
                     >
-                      <option value="">选择供应商...</option>
+                      <option value="">{t('settings.selectProvider')}</option>
                       {providerOptions.map((p) => (
                         <option key={p.id} value={p.id}>
                           {p.name} {p.isConnected ? '✓' : `(${p.modelCount} 个模型)`}
@@ -324,7 +328,7 @@ export function SettingsPanel({
                     Model
                     {providersLoading ? (
                       <div className="mt-1 rounded-md border border-input bg-background px-3 py-2 text-sm text-muted-foreground">
-                        加载中...
+                        {t('settings.loading')}
                       </div>
                     ) : currentProviderModels.length > 0 ? (
                       <select
@@ -332,7 +336,7 @@ export function SettingsPanel({
                         value={selectedModelId}
                         onChange={(e) => setSelectedModelId(e.target.value)}
                       >
-                        <option value="">选择模型...</option>
+                        <option value="">{t('settings.selectModel')}</option>
                         {currentProviderModels.map((m) => (
                           <option key={m.modelID} value={m.modelID} disabled={m.disabled}>
                             {m.modelName} {!m.isConnected && '(未连接)'}
@@ -387,12 +391,12 @@ export function SettingsPanel({
                         {isConnected ? (
                           <>
                             <CheckCircle2 className="h-4 w-4" />
-                            <span>已连接</span>
+                            <span>{t('settings.connected')}</span>
                           </>
                         ) : (
                           <>
                             <Shield className="h-4 w-4" />
-                            <span>未连接 - 请选择认证方式</span>
+                            <span>{t('settings.needAuth')}</span>
                           </>
                         )}
                       </div>
@@ -406,7 +410,7 @@ export function SettingsPanel({
                       <div className="rounded-md border border-border p-3">
                         <div className="mb-2 flex items-center gap-2 text-xs font-medium">
                           <Key className="h-3.5 w-3.5" />
-                          API Key 认证
+                          {t('settings.apiKeyAuth')}
                         </div>
                         <div className="flex gap-2">
                           <div className="relative flex-1">
@@ -441,7 +445,7 @@ export function SettingsPanel({
                         <div className="rounded-md border border-border p-3">
                           <div className="mb-2 flex items-center gap-2 text-xs font-medium">
                             <ExternalLink className="h-3.5 w-3.5" />
-                            OAuth 认证
+                            {t('settings.oauthAuth')}
                           </div>
                           <Button
                             variant="outline"
@@ -473,7 +477,7 @@ export function SettingsPanel({
                     <Input
                       value={baseURL}
                       onChange={(e) => setBaseURL(e.target.value)}
-                      placeholder={isOfficialProvider ? '留空使用官方接口' : 'https://api.example.com/v1'}
+                      placeholder={isOfficialProvider ? t('settings.defaultUrl') : 'https://api.example.com/v1'}
                       className="mt-1 font-mono text-xs"
                     />
                   </label>
@@ -489,11 +493,11 @@ export function SettingsPanel({
                       >
                         {saved ? (
                           <>
-                            <CheckCircle2 className="h-4 w-4" /> 已保存
+                            <CheckCircle2 className="h-4 w-4" /> {t('common.saved')}
                           </>
                         ) : (
                           <>
-                            <Save className="h-4 w-4" /> 更新配置
+                            <Save className="h-4 w-4" /> {t('settings.updateConfig')}
                           </>
                         )}
                       </Button>
@@ -510,7 +514,7 @@ export function SettingsPanel({
                       className="gap-1.5 text-muted-foreground"
                     >
                       <RefreshCw className={cn('h-3.5 w-3.5', providersLoading && 'animate-spin')} />
-                      刷新供应商列表
+                      {t('settings.refreshProviders')}
                     </Button>
                   </div>
                 </div>
@@ -520,7 +524,7 @@ export function SettingsPanel({
 
             {/* Pairing Code */}
             <section>
-              <h2 className="mb-4 text-sm font-medium text-muted-foreground">配对码</h2>
+              <h2 className="mb-4 text-sm font-medium text-muted-foreground">{t('settings.pairingCode')}</h2>
               <div className="flex items-center gap-4 rounded-xl bg-card p-5">
                 <span className="font-mono text-3xl font-bold tracking-[0.2em]">
                   {settings.pairingCode ?? '------'}
@@ -537,19 +541,19 @@ export function SettingsPanel({
                   }}
                 >
                   <RefreshCw className={cn('h-3.5 w-3.5', regenerating && 'animate-spin')} />
-                  重新生成
+                  {t('settings.regenerate')}
                 </Button>
               </div>
             </section>
 
             {/* Theme */}
             <section>
-              <h2 className="mb-4 text-sm font-medium text-muted-foreground">主题</h2>
+              <h2 className="mb-4 text-sm font-medium text-muted-foreground">{t('settings.theme')}</h2>
               <div className="flex gap-3">
                 {[
-                  { value: 'light' as Theme, label: '浅色', icon: Sun },
-                  { value: 'dark' as Theme, label: '深色', icon: Moon },
-                  { value: 'system' as Theme, label: '跟随系统', icon: Monitor },
+                  { value: 'light' as Theme, label: t('settings.themeLight'), icon: Sun },
+                  { value: 'dark' as Theme, label: t('settings.themeDark'), icon: Moon },
+                  { value: 'system' as Theme, label: t('settings.themeSystem'), icon: Monitor },
                 ].map((option) => (
                   <button
                     key={option.value}
@@ -568,12 +572,38 @@ export function SettingsPanel({
               </div>
             </section>
 
+            {/* Language */}
+            <section>
+              <h2 className="mb-4 text-sm font-medium text-muted-foreground">{t('settings.language')}</h2>
+              <div className="flex gap-3">
+                {[
+                  { value: 'system' as const, label: t('settings.languageSystem'), icon: Monitor },
+                  { value: 'zh' as const, label: '中文', icon: Globe },
+                  { value: 'en' as const, label: 'English', icon: Globe },
+                ].map((option) => (
+                  <button
+                    key={option.value}
+                    onClick={() => setLanguage(option.value)}
+                    className={cn(
+                      'flex flex-1 items-center justify-center gap-2 rounded-xl py-3 text-sm transition-colors',
+                      currentLanguage === option.value
+                        ? 'bg-primary text-primary-foreground'
+                        : 'bg-card text-muted-foreground hover:bg-secondary hover:text-foreground'
+                    )}
+                  >
+                    <option.icon className="h-4 w-4" />
+                    {option.label}
+                  </button>
+                ))}
+              </div>
+            </section>
+
             {/* Debug */}
             <section>
               <div className="flex items-center justify-between rounded-xl bg-card p-5">
                 <div>
-                  <p className="text-sm font-medium">调试工具</p>
-                  <p className="text-xs text-muted-foreground">查看服务状态和运行日志</p>
+                  <p className="text-sm font-medium">{t('settings.debugTools')}</p>
+                  <p className="text-xs text-muted-foreground">{t('settings.debugToolsDesc')}</p>
                 </div>
                 <Button
                   variant="outline"
@@ -582,7 +612,7 @@ export function SettingsPanel({
                   className="gap-1.5"
                 >
                   <Bug className="h-4 w-4" />
-                  打开
+                  {t('common.open')}
                 </Button>
               </div>
             </section>
@@ -594,7 +624,7 @@ export function SettingsPanel({
             {/* Global Skills */}
             <section>
               <div className="mb-4 flex items-center justify-between">
-                <h2 className="text-sm font-medium text-muted-foreground">全局 Skills</h2>
+                <h2 className="text-sm font-medium text-muted-foreground">{t('settings.globalSkills')}</h2>
                 <div className="flex gap-2">
                   <Button
                     variant="ghost"
@@ -602,7 +632,7 @@ export function SettingsPanel({
                     className="h-8 gap-1 text-xs text-muted-foreground"
                     onClick={() => void window.electronAPI.openSkillsDir('global')}
                   >
-                    <Folder className="h-3.5 w-3.5" /> 打开
+                    <Folder className="h-3.5 w-3.5" /> {t('common.open')}
                   </Button>
                   <Button
                     variant="ghost"
@@ -610,7 +640,7 @@ export function SettingsPanel({
                     className="h-8 gap-1 text-xs text-muted-foreground"
                     onClick={() => void handleImportSkill('global')}
                   >
-                    <Upload className="h-3.5 w-3.5" /> 导入
+                    <Upload className="h-3.5 w-3.5" /> {t('common.import')}
                   </Button>
                   <Button
                     variant="ghost"
@@ -635,7 +665,7 @@ export function SettingsPanel({
             {directory && (
               <section>
                 <div className="mb-4 flex items-center justify-between">
-                  <h2 className="text-sm font-medium text-muted-foreground">项目 Skills</h2>
+                  <h2 className="text-sm font-medium text-muted-foreground">{t('settings.projectSkills')}</h2>
                   <div className="flex gap-2">
                     <Button
                       variant="ghost"
@@ -643,7 +673,7 @@ export function SettingsPanel({
                       className="h-8 gap-1 text-xs text-muted-foreground"
                       onClick={() => void window.electronAPI.openSkillsDir('project', directory)}
                     >
-                      <Folder className="h-3.5 w-3.5" /> 打开
+                      <Folder className="h-3.5 w-3.5" /> {t('common.open')}
                     </Button>
                     <Button
                       variant="ghost"
@@ -651,7 +681,7 @@ export function SettingsPanel({
                       className="h-8 gap-1 text-xs text-muted-foreground"
                       onClick={() => void handleImportSkill('project')}
                     >
-                      <Upload className="h-3.5 w-3.5" /> 导入
+                      <Upload className="h-3.5 w-3.5" /> {t('common.import')}
                     </Button>
                   </div>
                 </div>
@@ -672,16 +702,16 @@ export function SettingsPanel({
       {oauthDialog.isOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
           <div className="w-full max-w-md rounded-xl bg-card p-6 shadow-xl">
-            <h3 className="mb-4 text-lg font-semibold">OAuth 授权</h3>
+            <h3 className="mb-4 text-lg font-semibold">{t('oauth.title')}</h3>
 
             <p className="mb-4 text-sm text-muted-foreground">
-              已在浏览器中打开授权页面。完成授权后，请输入获取的授权码。
+              {t('oauth.description')}
             </p>
 
             {/* 授权链接 */}
             {oauthDialog.authorizeUrl && (
               <div className="mb-4">
-                <p className="mb-1 text-xs text-muted-foreground">授权链接：</p>
+                <p className="mb-1 text-xs text-muted-foreground">{t('oauth.authorizeUrl')}：</p>
                 <div className="flex items-center gap-2">
                   <code className="flex-1 truncate rounded bg-secondary px-2 py-1 text-xs">
                     {oauthDialog.authorizeUrl}
@@ -704,11 +734,11 @@ export function SettingsPanel({
 
             {/* 授权码输入 */}
             <div className="mb-4">
-              <label className="mb-1 block text-xs text-muted-foreground">授权码</label>
+              <label className="mb-1 block text-xs text-muted-foreground">{t('oauth.authorizationCode')}</label>
               <Input
                 value={oauthDialog.code}
                 onChange={(e) => setOauthDialog(prev => ({ ...prev, code: e.target.value }))}
-                placeholder="粘贴授权码..."
+                placeholder={t('oauth.pasteCode')}
                 className="font-mono text-sm"
               />
             </div>
@@ -726,7 +756,7 @@ export function SettingsPanel({
                 onClick={closeOAuthDialog}
                 disabled={oauthDialog.loading}
               >
-                取消
+                {t('common.cancel')}
               </Button>
               <Button
                 size="sm"
@@ -736,10 +766,10 @@ export function SettingsPanel({
                 {oauthDialog.loading ? (
                   <>
                     <RefreshCw className="h-4 w-4 animate-spin" />
-                    授权中...
+                    {t('oauth.authorizing')}
                   </>
                 ) : (
-                  '完成授权'
+                  t('oauth.completeAuth')
                 )}
               </Button>
             </div>
@@ -757,10 +787,11 @@ function SkillList({
   skills: Skill[];
   onDelete?: (name: string, scope: 'global' | 'project') => void;
 }) {
+  const { t } = useTranslation();
   if (!skills.length) {
     return (
       <div className="rounded-xl border-2 border-dashed border-border py-8 text-center text-sm text-muted-foreground">
-        暂无 Skill
+        {t('settings.noSkills')}
       </div>
     );
   }

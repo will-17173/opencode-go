@@ -3,6 +3,7 @@ import 'package:opencode_go/l10n/app_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../providers/connection_provider.dart';
+import '../providers/locale_provider.dart';
 import '../providers/sessions_provider.dart';
 import '../screens/session_list_screen.dart';
 import '../widgets/common/app_empty_state.dart';
@@ -21,6 +22,49 @@ class HomeScreen extends ConsumerStatefulWidget {
 }
 
 class _HomeScreenState extends ConsumerState<HomeScreen> {
+  void _showLanguageDialog(BuildContext context, WidgetRef ref, AppLocalizations l10n) {
+    final currentLocale = ref.read(localeProvider);
+
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text(l10n.settingsLanguage),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            RadioListTile<Locale?>(
+              title: Text(l10n.settingsLanguageSystem),
+              value: null,
+              groupValue: currentLocale,
+              onChanged: (value) {
+                ref.read(localeProvider.notifier).setLocale(value);
+                Navigator.of(context).pop();
+              },
+            ),
+            RadioListTile<Locale?>(
+              title: const Text('中文'),
+              value: const Locale('zh'),
+              groupValue: currentLocale,
+              onChanged: (value) {
+                ref.read(localeProvider.notifier).setLocale(value);
+                Navigator.of(context).pop();
+              },
+            ),
+            RadioListTile<Locale?>(
+              title: const Text('English'),
+              value: const Locale('en'),
+              groupValue: currentLocale,
+              onChanged: (value) {
+                ref.read(localeProvider.notifier).setLocale(value);
+                Navigator.of(context).pop();
+              },
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
@@ -30,6 +74,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       appBar: AppBar(
         title: const Text('OpenCode Go'),
         actions: [
+          IconButton(
+            icon: const Icon(Icons.settings),
+            onPressed: () => _showLanguageDialog(context, ref, l10n),
+          ),
           IconButton(
             icon: const Icon(Icons.refresh),
             onPressed: () => ref.invalidate(directoriesProvider),

@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Settings, X } from 'lucide-react';
 import { ConnectionPanel } from '@/components/layout/ConnectionPanel';
 import { SettingsPanel } from '@/components/settings/SettingsPanel';
@@ -30,6 +31,7 @@ export function MainArea({
   onRenameProject,
 }: MainAreaProps) {
   const [showDebug, setShowDebug] = useState(false);
+  const { t } = useTranslation();
 
   return (
     <div className="flex h-full w-full flex-col overflow-hidden bg-background">
@@ -38,11 +40,11 @@ export function MainArea({
         <div className="flex items-center gap-3">
           <img
             src={appIcon}
-            alt="OpenCode Go"
+            alt={t('app.title')}
             className="h-8 w-8 rounded-xl"
           />
           <span className="text-lg font-semibold tracking-tight">
-            OpenCode Go
+            {t('app.title')}
           </span>
         </div>
         <button
@@ -51,7 +53,7 @@ export function MainArea({
             'flex h-9 w-9 items-center justify-center rounded-full transition-colors',
             'text-muted-foreground hover:bg-secondary hover:text-foreground'
           )}
-          title={showSettings ? '关闭设置' : '设置'}
+          title={showSettings ? t('settings.close') : t('settings.title')}
         >
           {showSettings ? <X className="h-5 w-5" /> : <Settings className="h-5 w-5" />}
         </button>

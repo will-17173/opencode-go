@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
+import { useTranslation } from 'react-i18next';
 import {
   Copy,
   Check,
@@ -52,26 +53,26 @@ interface PairingCodeResponse {
   pairingCode: string;
 }
 
-function formatRelativeTime(timestamp: number) {
+function formatRelativeTime(timestamp: number, t: (key: string, options?: Record<string, unknown>) => string) {
   const diff = Date.now() - timestamp;
   const minutes = Math.max(1, Math.floor(diff / 60000));
-  if (minutes < 60) return `${minutes} 分钟前`;
+  if (minutes < 60) return t('time.minutesAgo', { count: minutes });
   const hours = Math.floor(minutes / 60);
-  if (hours < 24) return `${hours} 小时前`;
+  if (hours < 24) return t('time.hoursAgo', { count: hours });
   const days = Math.floor(hours / 24);
-  return `${days} 天前`;
+  return t('time.daysAgo', { count: days });
 }
 
-function DeviceStatusBadge({ status }: { status: 'online' | 'recent' | 'offline' }) {
+function DeviceStatusBadge({ status, t }: { status: 'online' | 'recent' | 'offline'; t: (key: string) => string }) {
   const styles = {
     online: 'bg-emerald-50 text-emerald-700',
     recent: 'bg-amber-50 text-amber-700',
     offline: 'bg-slate-100 text-slate-600',
   } as const;
   const labels = {
-    online: '在线',
-    recent: '最近活跃',
-    offline: '离线',
+    online: t('connection.online'),
+    recent: t('connection.recentActive'),
+    offline: t('connection.offline'),
   } as const;
 
   return (
@@ -81,7 +82,7 @@ function DeviceStatusBadge({ status }: { status: 'online' | 'recent' | 'offline'
   );
 }
 
-function CopyBtn({ text }: { text: string }) {
+function CopyBtn({ text, t }: { text: string; t: (key: string) => string }) {
   const [copied, setCopied] = useState(false);
   const handleCopy = async () => {
     try {
@@ -94,14 +95,14 @@ function CopyBtn({ text }: { text: string }) {
     <button
       onClick={handleCopy}
       className="ml-1 inline-flex h-6 w-6 items-center justify-center rounded text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground"
-      title="复制"
+      title={t('common.copy')}
     >
       {copied ? <Check className="h-3.5 w-3.5 text-primary" /> : <Copy className="h-3.5 w-3.5" />}
     </button>
   );
 }
 
-function StatusDot({ running, healthy }: { running: boolean; healthy: boolean }) {
+function StatusDot({ running, healthy, t }: { running: boolean; healthy: boolean; t: (key: string) => string }) {
   const isOnline = running && healthy;
   return (
     <span
@@ -114,7 +115,7 @@ function StatusDot({ running, healthy }: { running: boolean; healthy: boolean })
         'h-2 w-2 rounded-full',
         isOnline ? 'bg-primary' : 'bg-amber-500'
       )} />
-      <span>{isOnline ? '在线' : '离线'}</span>
+      <span>{isOnline ? t('connection.online') : t('connection.offline')}</span>
     </span>
   );
 }
@@ -132,6 +133,7 @@ export function ConnectionPanel({
   onRemoveProject,
   onRenameProject,
 }: ConnectionPanelProps) {
+  const { t } = useTranslation();
   const proxyPort = useProxyPort();
   const { devices, summary, isLoading: devicesLoading } = useConnectedDevices(proxyPort);
   const baseUrl = proxyPort ? `http://127.0.0.1:${proxyPort}` : null;
@@ -218,8 +220,8 @@ export function ConnectionPanel({
                 <Activity className="h-4 w-4" />
               </div>
               <div className="min-w-0">
-                <p className="text-[11px] uppercase tracking-[0.12em] text-muted-foreground">状态</p>
-                <StatusDot running={opencodeRunning} healthy={opencodeHealthy} />
+                <p className="text-[11px] uppercase tracking-[0.12em] text-muted-foreground">{t('connection.status')}</p>
+                <StatusDot running={opencodeRunning} healthy={opencodeHealthy} t={t} />
               </div>
             </div>
             <Popover>
@@ -229,7 +231,7 @@ export function ConnectionPanel({
                     <Wifi className="h-4 w-4" />
                   </div>
                   <div className="min-w-0">
-                    <p className="text-[11px] uppercase tracking-[0.12em] text-muted-foreground">IP</p>
+                    <p className="text-[11px] uppercase tracking-[0.12em] text-muted-foreground">{t('connection.ip')}</p>
                     <div className="flex items-center gap-1.5">
                       <span className="truncate font-medium text-foreground">{primaryIp}</span>
                       {ips && ips.length > 1 ? (
@@ -243,8 +245,8 @@ export function ConnectionPanel({
               </PopoverTrigger>
               <PopoverContent className="w-64 p-0" align="start">
                 <div className="border-b border-border/60 px-4 py-3">
-                  <h3 className="text-sm font-semibold text-foreground">IP 地址</h3>
-                  <p className="text-xs text-muted-foreground">共 {ips?.length ?? 0} 个地址</p>
+                  <h3 className="text-sm font-semibold text-foreground">{t('connection.ipAddresses')}</h3>
+                  <p className="text-xs text-muted-foreground">{t('connection.addressCount', { count: ips?.length ?? 0 })}</p>
                 </div>
                 <div className="max-h-60 overflow-y-auto">
                   {ips && ips.length > 0 ? (
@@ -254,11 +256,11 @@ export function ConnectionPanel({
                         className="flex items-center justify-between gap-2 border-b border-border/40 px-4 py-2.5 last:border-b-0"
                       >
                         <span className="font-mono text-sm text-foreground">{ip}</span>
-                        <CopyBtn text={ip} />
+                        <CopyBtn text={ip} t={t} />
                       </div>
                     ))
                   ) : (
-                    <p className="px-4 py-6 text-center text-sm text-muted-foreground">未获取到 IP</p>
+                    <p className="px-4 py-6 text-center text-sm text-muted-foreground">{t('connection.noIp')}</p>
                   )}
                 </div>
               </PopoverContent>
@@ -268,22 +270,22 @@ export function ConnectionPanel({
                 <Hash className="h-4 w-4" />
               </div>
               <div className="min-w-0 flex-1">
-                <p className="text-[11px] uppercase tracking-[0.12em] text-muted-foreground">端口</p>
+                <p className="text-[11px] uppercase tracking-[0.12em] text-muted-foreground">{t('connection.port')}</p>
                 <span className="font-mono font-medium text-foreground">{proxyPort ?? '...'}</span>
               </div>
-              {proxyPort ? <CopyBtn text={String(proxyPort)} /> : null}
+              {proxyPort ? <CopyBtn text={String(proxyPort)} t={t} /> : null}
             </div>
             <div className="flex items-center gap-3 rounded-xl border border-border/60 bg-white px-3 py-2.5">
               <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-slate-100 text-slate-600">
                 <Copy className="h-4 w-4" />
               </div>
               <div className="min-w-0 flex-1">
-                <p className="text-[11px] uppercase tracking-[0.12em] text-muted-foreground">配对码</p>
+                <p className="text-[11px] uppercase tracking-[0.12em] text-muted-foreground">{t('connection.pairingCode')}</p>
                 <span className="font-mono text-xs font-semibold tracking-[0.2em] text-foreground">
                   {pairingCode ?? '------'}
                 </span>
               </div>
-              {pairingCode ? <CopyBtn text={pairingCode} /> : null}
+              {pairingCode ? <CopyBtn text={pairingCode} t={t} /> : null}
             </div>
             <Popover>
               <PopoverTrigger asChild>
@@ -292,13 +294,13 @@ export function ConnectionPanel({
                     <Smartphone className="h-4 w-4" />
                   </div>
                   <div className="min-w-0">
-                    <p className="text-[11px] uppercase tracking-[0.12em] text-muted-foreground">设备</p>
+                    <p className="text-[11px] uppercase tracking-[0.12em] text-muted-foreground">{t('connection.devices')}</p>
                     <div className="flex items-center gap-1.5">
                       {summary.online > 0 ? (
                         <span className="h-2 w-2 rounded-full bg-emerald-500" />
                       ) : null}
                       <span className="font-medium text-foreground">
-                        {summary.online > 0 ? `${summary.online} 在线` : `${devices.length} 个`}
+                        {summary.online > 0 ? `${summary.online} ${t('connection.online')}` : `${devices.length} ${t('connection.devices')}`}
                       </span>
                     </div>
                   </div>
@@ -307,21 +309,21 @@ export function ConnectionPanel({
               <PopoverContent className="w-80 p-0" align="start">
                 <div className="border-b border-border/60 px-4 py-3">
                   <div className="flex items-center justify-between">
-                    <h3 className="text-sm font-semibold text-foreground">已连接设备</h3>
+                    <h3 className="text-sm font-semibold text-foreground">{t('connection.connectedDevices')}</h3>
                     <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                      <span>在线 {summary.online}</span>
+                      <span>{t('connection.online')} {summary.online}</span>
                       <span>·</span>
-                      <span>最近 {summary.recent}</span>
+                      <span>{t('connection.recentActive')} {summary.recent}</span>
                       <span>·</span>
-                      <span>离线 {summary.offline}</span>
+                      <span>{t('connection.offline')} {summary.offline}</span>
                     </div>
                   </div>
                 </div>
                 <div className="max-h-60 overflow-y-auto">
                   {devicesLoading ? (
-                    <p className="px-4 py-6 text-center text-sm text-muted-foreground">正在加载设备…</p>
+                    <p className="px-4 py-6 text-center text-sm text-muted-foreground">{t('connection.loadingDevices')}</p>
                   ) : devices.length === 0 ? (
-                    <p className="px-4 py-6 text-center text-sm text-muted-foreground">暂无已配对设备</p>
+                    <p className="px-4 py-6 text-center text-sm text-muted-foreground">{t('connection.noDevices')}</p>
                   ) : (
                     devices.map((device) => (
                       <div
@@ -331,12 +333,12 @@ export function ConnectionPanel({
                         <div className="min-w-0">
                           <div className="flex items-center gap-2">
                             <p className="truncate text-sm font-medium text-foreground">{device.name}</p>
-                            <DeviceStatusBadge status={device.status} />
+                            <DeviceStatusBadge status={device.status} t={t} />
                           </div>
                           <p className="mt-0.5 text-xs text-muted-foreground">
-                            {device.platform === 'ios' ? 'iOS' : device.platform === 'android' ? 'Android' : '未知'}
+                            {device.platform === 'ios' ? 'iOS' : device.platform === 'android' ? 'Android' : t('connection.unknown')}
                             {' · '}
-                            {formatRelativeTime(device.lastSeenAt)}
+                            {formatRelativeTime(device.lastSeenAt, t)}
                           </p>
                         </div>
                       </div>
@@ -351,16 +353,16 @@ export function ConnectionPanel({
         {/* 工作区紧凑列表 */}
         <section className="space-y-4">
           <div className="flex items-center justify-between">
-            <h2 className="text-base font-semibold tracking-tight text-foreground">工作区管理</h2>
+            <h2 className="text-base font-semibold tracking-tight text-foreground">{t('workspace.title')}</h2>
             <div className="flex items-center gap-3">
-              <span className="text-sm text-muted-foreground">{projects.length} 个目录</span>
+              <span className="text-sm text-muted-foreground">{t('workspace.directoryCount', { count: projects.length })}</span>
               <Button
                 onClick={onAddProject}
                 size="sm"
                 className="h-9 rounded-lg bg-primary px-3 text-sm text-primary-foreground hover:bg-primary/90"
               >
                 <Plus className="mr-1.5 h-4 w-4" />
-                添加工作区
+                {t('workspace.addWorkspace')}
               </Button>
             </div>
           </div>
@@ -368,8 +370,8 @@ export function ConnectionPanel({
           {projects.length > 0 && (
             <div className="overflow-hidden rounded-2xl border border-border/60 bg-white shadow-[0_10px_24px_rgba(13,18,30,0.04)]">
               <div className="grid grid-cols-[minmax(0,1fr)_auto] border-b border-border/50 bg-[#f8fafb] px-4 py-2.5 text-xs font-medium uppercase tracking-[0.12em] text-muted-foreground">
-                <span>目录</span>
-                <span>操作</span>
+                <span>{t('workspace.directory')}</span>
+                <span>{t('workspace.actions')}</span>
               </div>
               {projects.map((project, index) => (
                 <div
@@ -408,7 +410,7 @@ export function ConnectionPanel({
                       <button
                         className="flex h-8 w-8 items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground"
                         onClick={(e) => e.stopPropagation()}
-                        title="目录操作"
+                        title={t('workspace.directoryActions')}
                       >
                         <MoreHorizontal className="h-4 w-4" />
                       </button>
@@ -416,14 +418,14 @@ export function ConnectionPanel({
                     <DropdownMenuContent align="end" className="w-32">
                       <DropdownMenuItem onClick={() => startRename(project)}>
                         <Pencil className="mr-2 h-4 w-4" />
-                        重命名
+                        {t('common.rename')}
                       </DropdownMenuItem>
                       <DropdownMenuItem
                         className="text-destructive focus:text-destructive"
                         onClick={() => setDeleteTarget(project)}
                       >
                         <Trash2 className="mr-2 h-4 w-4" />
-                        移除
+                        {t('common.remove')}
                       </DropdownMenuItem>
                     </DropdownMenuContent>
                   </DropdownMenu>
@@ -433,7 +435,7 @@ export function ConnectionPanel({
           )}
 
           {projects.length === 0 && (
-            <p className="text-sm text-muted-foreground">还没有工作区，先添加一个开始使用。</p>
+            <p className="text-sm text-muted-foreground">{t('workspace.emptyState')}</p>
           )}
         </section>
       </div>
@@ -442,13 +444,13 @@ export function ConnectionPanel({
       <AlertDialog open={!!deleteTarget} onOpenChange={(open) => !open && setDeleteTarget(null)}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>移除工作区</AlertDialogTitle>
+            <AlertDialogTitle>{t('workspace.removeTitle')}</AlertDialogTitle>
             <AlertDialogDescription>
-              确认移除「{deleteTarget?.name}」？仅移除引用，不删除磁盘文件。
+              {t('workspace.removeConfirm', { name: deleteTarget?.name })}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>取消</AlertDialogCancel>
+            <AlertDialogCancel>{t('common.cancel')}</AlertDialogCancel>
             <AlertDialogAction
               className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
               onClick={() => {
@@ -456,7 +458,7 @@ export function ConnectionPanel({
                 setDeleteTarget(null);
               }}
             >
-              移除
+              {t('common.remove')}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
