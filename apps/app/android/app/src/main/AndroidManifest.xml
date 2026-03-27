@@ -4,7 +4,7 @@
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.READ_MEDIA_IMAGES" />
     <application
-        android:label="opencode_work_mobile"
+        android:label="OpenCode Go"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
         <activity
