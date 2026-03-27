@@ -1,29 +1,43 @@
-import React, { useState, useEffect } from 'react';
-import { Eye, EyeOff, Save, CheckCircle2, Folder, Trash2, Upload, Globe, Package, RefreshCw, Sun, Moon, Monitor, Bug } from 'lucide-react';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
+import { Eye, EyeOff, Save, CheckCircle2, Folder, Trash2, Upload, Globe, Package, RefreshCw, Sun, Moon, Monitor, Bug, Zap, Wrench, DollarSign, ExternalLink, Key, Shield } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { cn } from '@/lib/utils';
-import type { useSettings } from '@/hooks/useSettings';
+import type { useSettings, useProviders } from '@/hooks/useSettings';
 import { useSkills } from '@/hooks/useSkills';
 import type { Skill } from '@/types/skill';
 import { useTheme, type Theme } from '@/hooks/useTheme';
-import { AVAILABLE_MODELS, PROVIDER_OPTIONS, isProviderReady, type ProviderType } from '@/types/model';
+import { formatContextWindow, formatCost } from '@/types/model';
 
 interface SettingsPanelProps {
   settings: ReturnType<typeof useSettings>;
+  providers: ReturnType<typeof useProviders>;
   directory?: string;
   onOpenDebugPanel?: () => void;
 }
 
 type SettingsTab = 'general' | 'skills';
 
+// OAuth 认证对话框状态
+type OAuthDialogState = {
+  isOpen: boolean;
+  providerId: string;
+  providerName: string;
+  authorizeUrl: string | null;
+  method: number;
+  code: string;
+  loading: boolean;
+  error: string | null;
+};
+
 export function SettingsPanel({
   settings: { settings, loading, error, saveModelSettings, regeneratePairingCode, proxyPort },
+  providers: { providerOptions, loading: providersLoading, refetch: refetchProviders, isProviderConnected, getProviderModels, getAuthMethods, startOAuth, completeOAuth },
   directory,
   onOpenDebugPanel,
 }: SettingsPanelProps) {
-  const [providerType, setProviderType] = useState<ProviderType>('openai');
-  const [model, setModel] = useState('');
+  const [selectedProviderId, setSelectedProviderId] = useState('');
+  const [selectedModelId, setSelectedModelId] = useState('');
   const [baseURL, setBaseURL] = useState('');
   const [inputKey, setInputKey] = useState('');
   const [showKey, setShowKey] = useState(false);
@@ -34,16 +48,140 @@ export function SettingsPanel({
   const { skills, reload: reloadSkills } = useSkills(directory);
   const { theme, setTheme } = useTheme();
 
+  // OAuth 对话框状态
+  const [oauthDialog, setOauthDialog] = useState<OAuthDialogState>({
+    isOpen: false,
+    providerId: '',
+    providerName: '',
+    authorizeUrl: null,
+    method: 0,
+    code: '',
+    loading: false,
+    error: null,
+  });
+
+  // 从当前设置初始化表单
   useEffect(() => {
-    setProviderType(settings.activeProviderConfig.providerType);
-    setModel(settings.activeProviderConfig.model);
-    setBaseURL(settings.activeProviderConfig.baseURL);
-  }, [settings.activeProviderConfig.baseURL, settings.activeProviderConfig.model, settings.activeProviderConfig.providerType]);
+    const config = settings.activeProviderConfig;
+    setSelectedProviderId(config.providerType);
+    setSelectedModelId(config.model);
+    setBaseURL(config.baseURL);
+  }, [settings.activeProviderConfig]);
+
+  // 当前 provider 的模型列表
+  const currentProviderModels = useMemo(() => {
+    return getProviderModels(selectedProviderId);
+  }, [getProviderModels, selectedProviderId]);
+
+  // 当前选中的模型信息
+  const selectedModel = useMemo(() => {
+    return currentProviderModels.find(m => m.modelID === selectedModelId);
+  }, [currentProviderModels, selectedModelId]);
+
+  // 当前 provider 的认证方式
+  const authMethods = useMemo(() => {
+    return getAuthMethods(selectedProviderId);
+  }, [getAuthMethods, selectedProviderId]);
+
+  // 检查是否支持 OAuth
+  const hasOAuth = useMemo(() => {
+    return authMethods.some(m => m.type === 'oauth');
+  }, [authMethods]);
+
+  // 获取 OAuth 方法索引
+  const oauthMethodIndex = useMemo(() => {
+    return authMethods.findIndex(m => m.type === 'oauth');
+  }, [authMethods]);
+
+  // 检查是否为官方 provider（OpenAI / Anthropic）
+  const isOfficialProvider = selectedProviderId === 'openai' || selectedProviderId === 'anthropic';
+  const isConnected = isProviderConnected(selectedProviderId);
+
+  // 发起 OAuth 授权
+  const handleStartOAuth = useCallback(async () => {
+    if (oauthMethodIndex < 0) return;
+
+    setOauthDialog(prev => ({ ...prev, loading: true, error: null }));
+
+    const result = await startOAuth(selectedProviderId, oauthMethodIndex);
+
+    if (result && result.url) {
+      setOauthDialog({
+        isOpen: true,
+        providerId: selectedProviderId,
+        providerName: selectedProviderId,
+        authorizeUrl: result.url,
+        method: oauthMethodIndex,
+        code: '',
+        loading: false,
+        error: null,
+      });
+      // 打开授权 URL
+      window.electronAPI.openExternalUrl(result.url);
+    } else {
+      setOauthDialog(prev => ({
+        ...prev,
+        loading: false,
+        error: '获取授权链接失败',
+      }));
+    }
+  }, [selectedProviderId, oauthMethodIndex, startOAuth]);
+
+  // 完成 OAuth 授权
+  const handleCompleteOAuth = useCallback(async () => {
+    if (!oauthDialog.code.trim()) {
+      setOauthDialog(prev => ({ ...prev, error: '请输入授权码' }));
+      return;
+    }
+
+    setOauthDialog(prev => ({ ...prev, loading: true, error: null }));
+
+    const success = await completeOAuth(
+      oauthDialog.providerId,
+      oauthDialog.method,
+      oauthDialog.code.trim()
+    );
+
+    if (success) {
+      setOauthDialog({
+        isOpen: false,
+        providerId: '',
+        providerName: '',
+        authorizeUrl: null,
+        method: 0,
+        code: '',
+        loading: false,
+        error: null,
+      });
+      // 刷新 provider 列表
+      await refetchProviders();
+    } else {
+      setOauthDialog(prev => ({
+        ...prev,
+        loading: false,
+        error: '授权失败，请重试',
+      }));
+    }
+  }, [oauthDialog, completeOAuth, refetchProviders]);
+
+  // 关闭 OAuth 对话框
+  const closeOAuthDialog = useCallback(() => {
+    setOauthDialog({
+      isOpen: false,
+      providerId: '',
+      providerName: '',
+      authorizeUrl: null,
+      method: 0,
+      code: '',
+      loading: false,
+      error: null,
+    });
+  }, []);
 
   const handleSave = async () => {
     const ok = await saveModelSettings({
-      providerType,
-      model: model.trim(),
+      providerType: selectedProviderId,
+      model: selectedModelId.trim(),
       baseURL: baseURL.trim(),
       apiKey: inputKey.trim(),
       extra: {},
@@ -52,6 +190,8 @@ export function SettingsPanel({
       setInputKey('');
       setSaved(true);
       setTimeout(() => setSaved(false), 2500);
+      // 刷新 provider 列表以更新连接状态
+      await refetchProviders();
       if (proxyPort) {
         try {
           await fetch(`http://127.0.0.1:${proxyPort}/api/debug/restart`, { method: 'POST' });
@@ -60,19 +200,7 @@ export function SettingsPanel({
     }
   };
 
-  // Provider ID 用于模型建议列表
-  const providerIDForSuggestion =
-    providerType === 'anthropic' || providerType === 'anthropic-compatible'
-      ? 'anthropic'
-      : providerType === 'openai-compatible' || providerType === 'google' || providerType === 'deepseek' || providerType === 'moonshot'
-        ? 'openai-compatible'
-        : 'openai';
-  const providerModels = AVAILABLE_MODELS.filter((m) => m.providerID === providerIDForSuggestion);
-  const providerReady = isProviderReady(providerType);
-
-  // 官方供应商不需要填写 baseURL
-  const isOfficialProvider = providerType === 'openai' || providerType === 'anthropic';
-  const canSave = inputKey.trim() && model.trim() && (isOfficialProvider || baseURL.trim()) && loading === false && providerReady;
+  const canSave = inputKey.trim() && selectedModelId.trim() && (isOfficialProvider || baseURL.trim()) && loading === false;
 
   const handleImportSkill = async (scope: 'global' | 'project') => {
     const input = document.createElement('input');
@@ -128,10 +256,11 @@ export function SettingsPanel({
       <div className="flex-1 overflow-y-auto p-8">
         {activeTab === 'general' && (
           <div className="mx-auto max-w-xl space-y-8">
-            {/* AI SDK Model */}
+            {/* Provider & Model */}
             <section>
-              <h2 className="mb-4 text-sm font-medium text-muted-foreground">供应商</h2>
+              <h2 className="mb-4 text-sm font-medium text-muted-foreground">供应商与模型</h2>
               <div className="rounded-xl bg-card p-5">
+                {/* 当前配置状态 */}
                 {settings.hasApiKey ? (
                   <div className="mb-4 space-y-2 rounded-md border border-border bg-background/60 p-3 text-xs">
                     <div className="flex items-center gap-2 text-sm text-primary">
@@ -167,39 +296,178 @@ export function SettingsPanel({
                   </p>
                 )}
 
+                {/* 表单 */}
                 <div className="space-y-3">
-                  <div className="grid grid-cols-2 gap-3">
-                    <label className="text-xs text-muted-foreground">
-                      Provider
+                  {/* Provider 选择 */}
+                  <label className="block text-xs text-muted-foreground">
+                    Provider
+                    <select
+                      className="mt-1 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                      value={selectedProviderId}
+                      onChange={(e) => {
+                        setSelectedProviderId(e.target.value);
+                        setSelectedModelId(''); // 切换 provider 时清空模型选择
+                      }}
+                      disabled={providersLoading}
+                    >
+                      <option value="">选择供应商...</option>
+                      {providerOptions.map((p) => (
+                        <option key={p.id} value={p.id}>
+                          {p.name} {p.isConnected ? '✓' : `(${p.modelCount} 个模型)`}
+                        </option>
+                      ))}
+                    </select>
+                  </label>
+
+                  {/* Model 选择 */}
+                  <label className="block text-xs text-muted-foreground">
+                    Model
+                    {providersLoading ? (
+                      <div className="mt-1 rounded-md border border-input bg-background px-3 py-2 text-sm text-muted-foreground">
+                        加载中...
+                      </div>
+                    ) : currentProviderModels.length > 0 ? (
                       <select
                         className="mt-1 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
-                        value={providerType}
-                        onChange={(e) => setProviderType(e.target.value as ProviderType)}
+                        value={selectedModelId}
+                        onChange={(e) => setSelectedModelId(e.target.value)}
                       >
-                        {PROVIDER_OPTIONS.map((p) => (
-                          <option key={p.type} value={p.type}>
-                            {p.label}
+                        <option value="">选择模型...</option>
+                        {currentProviderModels.map((m) => (
+                          <option key={m.modelID} value={m.modelID} disabled={m.disabled}>
+                            {m.modelName} {!m.isConnected && '(未连接)'}
                           </option>
                         ))}
                       </select>
-                    </label>
-                    <label className="text-xs text-muted-foreground">
-                      Model ID
+                    ) : (
                       <Input
-                        value={model}
-                        onChange={(e) => setModel(e.target.value)}
-                        placeholder="例如 gpt-5.2"
-                        list={`model-suggestions-${providerType}`}
+                        value={selectedModelId}
+                        onChange={(e) => setSelectedModelId(e.target.value)}
+                        placeholder="输入模型 ID，如 gpt-4o"
                         className="mt-1 font-mono text-xs"
                       />
-                      <datalist id={`model-suggestions-${providerType}`}>
-                        {providerModels.map((m) => (
-                          <option key={m.id} value={m.id} />
-                        ))}
-                      </datalist>
-                    </label>
-                  </div>
+                    )}
+                  </label>
 
+                  {/* 选中模型的详细信息 */}
+                  {selectedModel && (
+                    <div className="rounded-md border border-border bg-secondary/30 p-3 text-xs">
+                      <div className="grid grid-cols-2 gap-2 text-muted-foreground">
+                        <div className="flex items-center gap-1.5">
+                          <Zap className="h-3.5 w-3.5" />
+                          <span>{selectedModel.reasoning ? '支持推理' : '标准模式'}</span>
+                        </div>
+                        <div className="flex items-center gap-1.5">
+                          <Wrench className="h-3.5 w-3.5" />
+                          <span>{selectedModel.toolCall ? '支持工具调用' : '无工具调用'}</span>
+                        </div>
+                        <div className="flex items-center gap-1.5">
+                          <Folder className="h-3.5 w-3.5" />
+                          <span>上下文 {formatContextWindow(selectedModel.contextWindow)}</span>
+                        </div>
+                        {selectedModel.cost && (
+                          <div className="flex items-center gap-1.5">
+                            <DollarSign className="h-3.5 w-3.5" />
+                            <span>{formatCost(selectedModel.cost)}</span>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* 连接状态与认证选项 */}
+                  {selectedProviderId && (
+                    <div className={cn(
+                      'rounded-md border p-3 text-xs',
+                      isConnected
+                        ? 'border-green-500/30 bg-green-500/10 text-green-600 dark:text-green-400'
+                        : 'border-yellow-500/30 bg-yellow-500/10 text-yellow-600 dark:text-yellow-400'
+                    )}>
+                      <div className="flex items-center gap-2">
+                        {isConnected ? (
+                          <>
+                            <CheckCircle2 className="h-4 w-4" />
+                            <span>已连接</span>
+                          </>
+                        ) : (
+                          <>
+                            <Shield className="h-4 w-4" />
+                            <span>未连接 - 请选择认证方式</span>
+                          </>
+                        )}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* 认证方式选择 */}
+                  {selectedProviderId && !isConnected && (
+                    <div className="space-y-2">
+                      {/* API Key 认证 */}
+                      <div className="rounded-md border border-border p-3">
+                        <div className="mb-2 flex items-center gap-2 text-xs font-medium">
+                          <Key className="h-3.5 w-3.5" />
+                          API Key 认证
+                        </div>
+                        <div className="flex gap-2">
+                          <div className="relative flex-1">
+                            <Input
+                              type={showKey ? 'text' : 'password'}
+                              placeholder="sk-..."
+                              value={inputKey}
+                              onChange={(e) => setInputKey(e.target.value)}
+                              className="pr-10 font-mono text-xs"
+                            />
+                            <button
+                              type="button"
+                              className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                              onClick={() => setShowKey((v) => !v)}
+                              tabIndex={-1}
+                            >
+                              {showKey ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                            </button>
+                          </div>
+                          <Button
+                            size="sm"
+                            onClick={handleSave}
+                            disabled={!inputKey.trim() || !selectedModelId.trim() || loading}
+                          >
+                            <Save className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      </div>
+
+                      {/* OAuth 认证 */}
+                      {hasOAuth && (
+                        <div className="rounded-md border border-border p-3">
+                          <div className="mb-2 flex items-center gap-2 text-xs font-medium">
+                            <ExternalLink className="h-3.5 w-3.5" />
+                            OAuth 认证
+                          </div>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={handleStartOAuth}
+                            disabled={oauthDialog.loading}
+                            className="w-full gap-1.5"
+                          >
+                            {oauthDialog.loading ? (
+                              <>
+                                <RefreshCw className="h-4 w-4 animate-spin" />
+                                正在获取授权链接...
+                              </>
+                            ) : (
+                              <>
+                                <ExternalLink className="h-4 w-4" />
+                                通过 OAuth 登录
+                              </>
+                            )}
+                          </Button>
+                        </div>
+                      )}
+                    </div>
+                  )}
+
+                  {/* Base URL */}
                   <label className="block text-xs text-muted-foreground">
                     Base URL{isOfficialProvider && <span className="ml-1 text-muted-foreground/60">(可选)</span>}
                     <Input
@@ -210,40 +478,41 @@ export function SettingsPanel({
                     />
                   </label>
 
-                  <div className="relative">
-                    <Input
-                      type={showKey ? 'text' : 'password'}
-                      placeholder={settings.activeProviderConfig.apiKeyMasked || 'sk-...'}
-                      value={inputKey}
-                      onChange={(e) => setInputKey(e.target.value)}
-                      className="pr-10 font-mono text-sm"
-                      onKeyDown={(e) => e.key === 'Enter' && canSave && handleSave()}
-                    />
-                    <button
-                      type="button"
-                      className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
-                      onClick={() => setShowKey((v) => !v)}
-                      tabIndex={-1}
+                  {/* 保存按钮（已连接时显示） */}
+                  {isConnected && (
+                    <div className="flex items-center gap-3">
+                      <Button
+                        onClick={handleSave}
+                        disabled={!canSave}
+                        size="sm"
+                        className={cn('gap-1.5', saved && 'bg-primary')}
+                      >
+                        {saved ? (
+                          <>
+                            <CheckCircle2 className="h-4 w-4" /> 已保存
+                          </>
+                        ) : (
+                          <>
+                            <Save className="h-4 w-4" /> 更新配置
+                          </>
+                        )}
+                      </Button>
+                    </div>
+                  )}
+
+                  {/* 刷新按钮 */}
+                  <div className="flex items-center gap-3 pt-2 border-t border-border">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => refetchProviders()}
+                      disabled={providersLoading}
+                      className="gap-1.5 text-muted-foreground"
                     >
-                      {showKey ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                    </button>
+                      <RefreshCw className={cn('h-3.5 w-3.5', providersLoading && 'animate-spin')} />
+                      刷新供应商列表
+                    </Button>
                   </div>
-                  <Button
-                    onClick={handleSave}
-                    disabled={!canSave}
-                    size="sm"
-                    className={cn('gap-1.5', saved && 'bg-primary')}
-                  >
-                    {saved ? (
-                      <>
-                        <CheckCircle2 className="h-4 w-4" /> 已保存
-                      </>
-                    ) : (
-                      <>
-                        <Save className="h-4 w-4" /> 保存
-                      </>
-                    )}
-                  </Button>
                 </div>
                 {error && <p className="mt-2 text-xs text-destructive">{error}</p>}
               </div>
@@ -398,6 +667,85 @@ export function SettingsPanel({
           </div>
         )}
       </div>
+
+      {/* OAuth 授权对话框 */}
+      {oauthDialog.isOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
+          <div className="w-full max-w-md rounded-xl bg-card p-6 shadow-xl">
+            <h3 className="mb-4 text-lg font-semibold">OAuth 授权</h3>
+
+            <p className="mb-4 text-sm text-muted-foreground">
+              已在浏览器中打开授权页面。完成授权后，请输入获取的授权码。
+            </p>
+
+            {/* 授权链接 */}
+            {oauthDialog.authorizeUrl && (
+              <div className="mb-4">
+                <p className="mb-1 text-xs text-muted-foreground">授权链接：</p>
+                <div className="flex items-center gap-2">
+                  <code className="flex-1 truncate rounded bg-secondary px-2 py-1 text-xs">
+                    {oauthDialog.authorizeUrl}
+                  </code>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="h-7 w-7 p-0"
+                    onClick={() => {
+                      if (oauthDialog.authorizeUrl) {
+                        window.electronAPI.openExternalUrl(oauthDialog.authorizeUrl);
+                      }
+                    }}
+                  >
+                    <ExternalLink className="h-3.5 w-3.5" />
+                  </Button>
+                </div>
+              </div>
+            )}
+
+            {/* 授权码输入 */}
+            <div className="mb-4">
+              <label className="mb-1 block text-xs text-muted-foreground">授权码</label>
+              <Input
+                value={oauthDialog.code}
+                onChange={(e) => setOauthDialog(prev => ({ ...prev, code: e.target.value }))}
+                placeholder="粘贴授权码..."
+                className="font-mono text-sm"
+              />
+            </div>
+
+            {/* 错误信息 */}
+            {oauthDialog.error && (
+              <p className="mb-4 text-xs text-destructive">{oauthDialog.error}</p>
+            )}
+
+            {/* 操作按钮 */}
+            <div className="flex justify-end gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={closeOAuthDialog}
+                disabled={oauthDialog.loading}
+              >
+                取消
+              </Button>
+              <Button
+                size="sm"
+                onClick={handleCompleteOAuth}
+                disabled={oauthDialog.loading || !oauthDialog.code.trim()}
+              >
+                {oauthDialog.loading ? (
+                  <>
+                    <RefreshCw className="h-4 w-4 animate-spin" />
+                    授权中...
+                  </>
+                ) : (
+                  '完成授权'
+                )}
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

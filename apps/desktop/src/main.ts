@@ -1096,8 +1096,96 @@ function handleGetConnectedDevices(req: http.IncomingMessage, res: http.ServerRe
   res.end(JSON.stringify({ devices, summary }));
 }
 
+// ── Provider API 代理 ───────────────────────────────────────────────────────────
+// 将 /api/provider/* 请求代理到 OpenCode 后端的 /provider/*
+
+async function handleProviderList(req: http.IncomingMessage, res: http.ServerResponse) {
+  setCorsHeaders(res, req);
+  try {
+    const client = getClient();
+    const result = await client.provider.list();
+    if (result.data) {
+      res.writeHead(200, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify(result.data));
+    } else {
+      res.writeHead(500, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify({ error: 'Failed to fetch provider list' }));
+    }
+  } catch (e) {
+    console.error('[proxy] handleProviderList error', e);
+    res.writeHead(500, { 'Content-Type': 'application/json' });
+    res.end(JSON.stringify({ error: String(e) }));
+  }
+}
+
+async function handleProviderAuth(req: http.IncomingMessage, res: http.ServerResponse) {
+  setCorsHeaders(res, req);
+  try {
+    const client = getClient();
+    const result = await client.provider.auth();
+    if (result.data) {
+      res.writeHead(200, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify(result.data));
+    } else {
+      res.writeHead(500, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify({ error: 'Failed to fetch provider auth' }));
+    }
+  } catch (e) {
+    console.error('[proxy] handleProviderAuth error', e);
+    res.writeHead(500, { 'Content-Type': 'application/json' });
+    res.end(JSON.stringify({ error: String(e) }));
+  }
+}
+
+async function handleProviderOauthAuthorize(req: http.IncomingMessage, res: http.ServerResponse, providerID: string) {
+  setCorsHeaders(res, req);
+  try {
+    const body = JSON.parse(await readBody(req));
+    const client = getClient();
+    const result = await client.provider.oauth.authorize({
+      providerID,
+      method: body.method ?? 0,
+    });
+    if (result.data) {
+      res.writeHead(200, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify(result.data));
+    } else {
+      res.writeHead(400, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify({ error: result.error }));
+    }
+  } catch (e) {
+    console.error('[proxy] handleProviderOauthAuthorize error', e);
+    res.writeHead(500, { 'Content-Type': 'application/json' });
+    res.end(JSON.stringify({ error: String(e) }));
+  }
+}
+
+async function handleProviderOauthCallback(req: http.IncomingMessage, res: http.ServerResponse, providerID: string) {
+  setCorsHeaders(res, req);
+  try {
+    const body = JSON.parse(await readBody(req));
+    const client = getClient();
+    const result = await client.provider.oauth.callback({
+      providerID,
+      method: body.method ?? 0,
+      code: body.code,
+    });
+    if (result.data) {
+      res.writeHead(200, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify(result.data));
+    } else {
+      res.writeHead(400, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify({ error: result.error }));
+    }
+  } catch (e) {
+    console.error('[proxy] handleProviderOauthCallback error', e);
+    res.writeHead(500, { 'Content-Type': 'application/json' });
+    res.end(JSON.stringify({ error: String(e) }));
+  }
+}
+
 // ── GET /api/models ───────────────────────────────────────────────────────────
-// 返回可用的模型列表
+// 返回可用的模型列表（已废弃，使用 /api/provider 获取动态列表）
 function handleGetModels(_req: http.IncomingMessage, res: http.ServerResponse) {
   setCorsHeaders(res);
 
@@ -2399,6 +2487,50 @@ function createProxyServer(): Promise<number> {
 
       if (req.method === 'POST' && url.startsWith('/api/pairing/devices/register')) {
         await handleRegisterConnectedDevice(req, res);
+        return;
+      }
+
+      // /api/provider - Provider API 代理
+      if (url.startsWith('/api/provider')) {
+        const parsedUrl = new URL(req.url!, `http://${req.headers.host}`);
+        const pathname = parsedUrl.pathname;
+
+        // GET /api/provider - 获取 provider 列表
+        if (req.method === 'GET' && pathname === '/api/provider') {
+          await handleProviderList(req, res).catch((e) => {
+            if (!res.headersSent) { res.writeHead(500); res.end(String(e)); }
+          });
+          return;
+        }
+
+        // GET /api/provider/auth - 获取认证方式
+        if (req.method === 'GET' && pathname === '/api/provider/auth') {
+          await handleProviderAuth(req, res).catch((e) => {
+            if (!res.headersSent) { res.writeHead(500); res.end(String(e)); }
+          });
+          return;
+        }
+
+        // POST /api/provider/:providerID/oauth/authorize
+        const authorizeMatch = pathname.match(/^\/api\/provider\/([^/]+)\/oauth\/authorize$/);
+        if (req.method === 'POST' && authorizeMatch) {
+          await handleProviderOauthAuthorize(req, res, authorizeMatch[1]).catch((e) => {
+            if (!res.headersSent) { res.writeHead(500); res.end(String(e)); }
+          });
+          return;
+        }
+
+        // POST /api/provider/:providerID/oauth/callback
+        const callbackMatch = pathname.match(/^\/api\/provider\/([^/]+)\/oauth\/callback$/);
+        if (req.method === 'POST' && callbackMatch) {
+          await handleProviderOauthCallback(req, res, callbackMatch[1]).catch((e) => {
+            if (!res.headersSent) { res.writeHead(500); res.end(String(e)); }
+          });
+          return;
+        }
+
+        res.writeHead(404, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ error: 'Provider API not found' }));
         return;
       }
 

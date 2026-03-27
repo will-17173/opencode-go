@@ -5,13 +5,14 @@ import { SettingsPanel } from '@/components/settings/SettingsPanel';
 import { DebugPanel } from '@/components/debug/DebugPanel';
 import { cn } from '@/lib/utils';
 import appIcon from '@/assets/icon.png';
-import type { useSettings } from '@/hooks/useSettings';
+import type { useSettings, useProviders } from '@/hooks/useSettings';
 import type { Project } from '@/hooks/useProjects';
 
 interface MainAreaProps {
   showSettings: boolean;
   onShowSettings: (show: boolean) => void;
   settings: ReturnType<typeof useSettings>;
+  providers: ReturnType<typeof useProviders>;
   projects: Project[];
   onAddProject: () => void;
   onRemoveProject: (id: string) => void;
@@ -22,6 +23,7 @@ export function MainArea({
   showSettings,
   onShowSettings,
   settings,
+  providers,
   projects,
   onAddProject,
   onRemoveProject,
@@ -60,6 +62,7 @@ export function MainArea({
         {showSettings ? (
           <SettingsPanel
             settings={settings}
+            providers={providers}
             onOpenDebugPanel={() => setShowDebug(true)}
           />
         ) : (

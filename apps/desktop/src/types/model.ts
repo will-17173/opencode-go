@@ -1,4 +1,33 @@
 /**
+ * 模型相关类型定义
+ * 复用 SDK 类型，提供类型安全的模型引用
+ */
+
+// 从 SDK 导入 provider 相关类型
+import type {
+  ProviderListResponse,
+  ProviderAuthResponse,
+  ProviderAuthMethod,
+} from '@opencode-ai/sdk/v2';
+
+// 重新导出 SDK 类型供其他模块使用
+export type {
+  ProviderListResponse,
+  ProviderAuthResponse,
+  ProviderAuthMethod,
+};
+
+/**
+ * Provider 列表项类型（从 SDK 类型推导）
+ */
+export type ProviderItem = ProviderListResponse['all'][number];
+
+/**
+ * Provider 模型信息类型（从 SDK 类型推导）
+ */
+export type ProviderModel = ProviderItem['models'][string];
+
+/**
  * 模型引用，用于标识一个具体的模型
  */
 export type ModelRef = {
@@ -6,150 +35,38 @@ export type ModelRef = {
   modelID: string;
 };
 
-export type ProviderType =
-  | 'openai'
-  | 'anthropic'
-  | 'google'
-  | 'azure-openai'
-  | 'deepseek'
-  | 'moonshot'
-  | 'openai-compatible'
-  | 'anthropic-compatible';
-
-export type ProviderOption = {
-  type: ProviderType;
-  label: string;
-  ready: boolean;
-};
-
-export const PROVIDER_OPTIONS: ProviderOption[] = [
-  { type: 'openai', label: 'OpenAI', ready: true },
-  { type: 'anthropic', label: 'Anthropic', ready: true },
-  { type: 'openai-compatible', label: 'OpenAI-Compatible', ready: true },
-  { type: 'anthropic-compatible', label: 'Anthropic-Compatible', ready: true },
-  { type: 'google', label: 'Google', ready: true },
-  { type: 'azure-openai', label: 'Azure OpenAI', ready: true },
-  { type: 'deepseek', label: 'DeepSeek', ready: true },
-  { type: 'moonshot', label: 'Moonshot', ready: true },
-];
-
-export function isProviderReady(type: ProviderType): boolean {
-  return PROVIDER_OPTIONS.find((p) => p.type === type)?.ready ?? false;
-}
-
 /**
- * 模型选项，用于 UI 显示
+ * 模型选项，用于 UI 显示（从动态 provider 列表构建）
  */
 export type ModelOption = {
   providerID: string;
   modelID: string;
-  title: string;
-  description?: string;
-  contextWindow?: number;
-  disabled?: boolean;
+  providerName: string;
+  modelName: string;
+  contextWindow: number;
+  reasoning: boolean;
+  toolCall: boolean;
+  attachment: boolean;
+  temperature: boolean;
+  cost?: {
+    input: number;
+    output: number;
+    cache_read?: number;
+    cache_write?: number;
+  };
+  disabled: boolean;
+  isConnected: boolean;
 };
 
 /**
- * 模型详细信息
+ * Provider 选项，用于设置面板的 provider 选择器
  */
-export type ModelInfo = {
-  providerID: string;
+export type ProviderOption = {
   id: string;
-  name?: string;
-  contextWindow?: number;
-  status?: 'active' | 'deprecated';
+  name: string;
+  isConnected: boolean;
+  modelCount: number;
 };
-
-/**
- * 可用的模型列表
- */
-export const AVAILABLE_MODELS: ModelInfo[] = [
-  {
-    providerID: 'anthropic',
-    id: 'claude-sonnet-4-5-20250929',
-    name: 'Claude Sonnet 4.5',
-    contextWindow: 200000,
-    status: 'active',
-  },
-  {
-    providerID: 'openai',
-    id: 'gpt-5.2',
-    name: 'GPT-5.2',
-    contextWindow: 200000,
-    status: 'active',
-  },
-  {
-    providerID: 'openai',
-    id: 'gpt-4o',
-    name: 'GPT-4o',
-    contextWindow: 128000,
-    status: 'active',
-  },
-  {
-    providerID: 'openai',
-    id: 'gpt-4o-mini',
-    name: 'GPT-4o Mini',
-    contextWindow: 128000,
-    status: 'active',
-  },
-  // OpenAI-Compatible（通过自定义 baseURL 调用）
-  {
-    providerID: 'openai-compatible',
-    id: 'qwen-max',
-    name: 'Qwen Max',
-    contextWindow: 32768,
-    status: 'active',
-  },
-  {
-    providerID: 'openai-compatible',
-    id: 'qwen-plus',
-    name: 'Qwen Plus',
-    contextWindow: 131072,
-    status: 'active',
-  },
-  {
-    providerID: 'openai-compatible',
-    id: 'deepseek-chat',
-    name: 'DeepSeek Chat (V3)',
-    contextWindow: 65536,
-    status: 'active',
-  },
-  {
-    providerID: 'openai-compatible',
-    id: 'deepseek-reasoner',
-    name: 'DeepSeek R1',
-    contextWindow: 65536,
-    status: 'active',
-  },
-  {
-    providerID: 'openai-compatible',
-    id: 'moonshot-v1-8k',
-    name: 'Moonshot v1 8k',
-    contextWindow: 8192,
-    status: 'active',
-  },
-  {
-    providerID: 'openai-compatible',
-    id: 'moonshot-v1-128k',
-    name: 'Moonshot v1 128k',
-    contextWindow: 131072,
-    status: 'active',
-  },
-  {
-    providerID: 'openai-compatible',
-    id: 'gemini-2.0-flash',
-    name: 'Gemini 2.0 Flash',
-    contextWindow: 1048576,
-    status: 'active',
-  },
-  {
-    providerID: 'openai-compatible',
-    id: 'gemini-2.5-pro-preview-05-06',
-    name: 'Gemini 2.5 Pro',
-    contextWindow: 1048576,
-    status: 'active',
-  },
-];
 
 /**
  * localStorage 存储键
@@ -179,17 +96,77 @@ export function parseModelRef(raw: string | null): ModelRef | null {
 /**
  * 比较两个模型是否相同
  */
-export function modelEquals(a: ModelRef, b: ModelRef): boolean {
+export function modelEquals(a: ModelRef | null, b: ModelRef | null): boolean {
+  if (!a || !b) return a === b;
   return a.providerID === b.providerID && a.modelID === b.modelID;
 }
 
 /**
- * 格式化模型标签用于显示
+ * 从 provider 列表构建模型选项列表
  */
-export function formatModelLabel(model: ModelRef): string {
-  const modelInfo = AVAILABLE_MODELS.find((m) => m.providerID === model.providerID && m.id === model.modelID);
-  if (modelInfo?.name) {
-    return modelInfo.name;
+export function buildModelOptions(
+  providers: ProviderItem[],
+  connected: string[],
+  defaultModels: Record<string, string>
+): ModelOption[] {
+  const options: ModelOption[] = [];
+  const connectedSet = new Set(connected);
+
+  // 按 provider 排序：已连接的在前
+  const sortedProviders = [...providers].sort((a, b) => {
+    const aConnected = connectedSet.has(a.id);
+    const bConnected = connectedSet.has(b.id);
+    if (aConnected && !bConnected) return -1;
+    if (!aConnected && bConnected) return 1;
+    return a.name.localeCompare(b.name);
+  });
+
+  for (const provider of sortedProviders) {
+    const isConnected = connectedSet.has(provider.id);
+
+    for (const [modelId, model] of Object.entries(provider.models)) {
+      options.push({
+        providerID: provider.id,
+        modelID: modelId,
+        providerName: provider.name,
+        modelName: model.name || modelId,
+        contextWindow: model.limit?.context ?? 128000,
+        reasoning: model.reasoning ?? false,
+        toolCall: model.tool_call ?? false,
+        attachment: model.attachment ?? false,
+        temperature: model.temperature ?? true,
+        cost: model.cost ? {
+          input: model.cost.input,
+          output: model.cost.output,
+          cache_read: model.cost.cache_read,
+          cache_write: model.cost.cache_write,
+        } : undefined,
+        disabled: !isConnected,
+        isConnected,
+      });
+    }
   }
-  return model.modelID;
+
+  return options;
+}
+
+/**
+ * 格式化成本显示
+ */
+export function formatCost(cost?: { input: number; output: number }): string {
+  if (!cost) return '';
+  const formatPrice = (price: number) => {
+    if (price < 0.01) return `$${(price * 1000).toFixed(2)}/1M`;
+    return `$${price.toFixed(2)}/1M`;
+  };
+  return `输入 ${formatPrice(cost.input)} / 输出 ${formatPrice(cost.output)}`;
+}
+
+/**
+ * 格式化上下文窗口大小
+ */
+export function formatContextWindow(context: number): string {
+  if (context >= 1000000) return `${(context / 1000000).toFixed(1)}M`;
+  if (context >= 1000) return `${(context / 1000).toFixed(0)}K`;
+  return String(context);
 }

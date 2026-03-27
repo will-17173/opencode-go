@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { MainArea } from '@/components/layout/MainArea';
 import { Toaster } from '@/components/ui/Toast';
 import { useProxyPort } from '@/hooks/useProxyPort';
-import { useSettings } from '@/hooks/useSettings';
+import { useSettings, useProviders } from '@/hooks/useSettings';
 import { useProjects } from '@/hooks/useProjects';
 import { useTheme } from '@/hooks/useTheme';
 
@@ -11,6 +11,7 @@ export function App() {
 
   const proxyPort = useProxyPort();
   const settings = useSettings(proxyPort);
+  const providers = useProviders(proxyPort);
   const { projects, addProject, removeProject, renameProject } = useProjects();
 
   useTheme();
@@ -26,6 +27,7 @@ export function App() {
         showSettings={showSettings}
         onShowSettings={setShowSettings}
         settings={settings}
+        providers={providers}
         projects={projects}
         onAddProject={handleAddProject}
         onRemoveProject={removeProject}
